@@ -1,0 +1,64 @@
+# OriginX Docker Compose 配置
+
+version: '3.8'
+
+services:
+  originx:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: originx
+    ports:
+      - "8080:8080"
+    volumes:
+      # 配置文件（可选）
+      - ./config.yaml:/app/config.yaml:ro
+      # 结果存储
+      - ./results:/app/results
+      # 样本存储
+      - ./samples:/app/samples
+      # 日志
+      - ./logs:/app/logs
+    environment:
+      - ORIGINX_CONFIG=/app/config.yaml
+      - TZ=Asia/Shanghai
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/api/v1/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+    deploy:
+      resources:
+        limits:
+          memory: 2G
+        reservations:
+          memory: 512M
+
+  # 可选：带GPU支持的版本
+  originx-gpu:
+    build:
+      context: .
+      dockerfile: Dockerfile.gpu
+    container_name: originx-gpu
+    ports:
+      - "8081:8080"
+    volumes:
+      - ./config.yaml:/app/config.yaml:ro
+      - ./results:/app/results
+      - ./samples:/app/samples
+    environment:
+      - ORIGINX_CONFIG=/app/config.yaml
+      - NVIDIA_VISIBLE_DEVICES=all
+    restart: unless-stopped
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu]
+    profiles:
+      - gpu
+

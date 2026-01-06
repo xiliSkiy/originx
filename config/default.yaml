@@ -1,0 +1,47 @@
+# OriginX 默认配置文件
+# 图像/视频质量诊断系统
+
+# 检测配置
+profile: normal                    # 配置模板: strict/normal/loose
+detection_level: standard          # 检测级别: fast/standard/deep
+parallel_detection: true           # 是否并行检测
+max_workers: 4                     # 最大并发数
+gpu_enabled: false                 # 是否启用GPU加速
+
+# 自定义阈值（可选，会覆盖profile中的配置）
+# custom_thresholds:
+#   blur_threshold: 120
+#   brightness_min: 25
+
+# 服务器配置
+server:
+  host: 0.0.0.0
+  port: 8080
+  workers: 4
+  timeout: 30
+  max_request_size: 52428800       # 50MB
+
+# 存储配置
+storage:
+  result_dir: ./results            # 结果存储目录
+  sample_dir: ./samples            # 样本存储目录
+  keep_days: 30                    # 结果保留天数
+  save_thumbnails: true            # 是否保存缩略图
+  thumbnail_size: [320, 240]
+
+# 日志配置
+log:
+  level: INFO                      # DEBUG/INFO/WARNING/ERROR
+  format: "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+  file: null                       # 日志文件路径（可选）
+  max_size: 10485760               # 10MB
+  backup_count: 5
+
+# 样本收集配置
+sample_collection:
+  enabled: true                    # 是否启用样本收集
+  collect_abnormal: true           # 收集异常样本
+  collect_boundary: true           # 收集边界样本
+  boundary_range: [0.3, 0.7]       # 边界置信度区间
+  max_samples_per_type: 1000       # 每类最大样本数
+
