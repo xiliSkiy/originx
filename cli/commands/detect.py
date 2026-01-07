@@ -326,6 +326,22 @@ def detect_batch(
 
     # 保存报告
     if report and output:
+        # 将 image_path 转换为相对于输出目录的相对路径
+        output_path = Path(output).resolve()
+        results_data = []
+        for r in results:
+            result_dict = r.to_dict()
+            # 计算相对于输出目录的相对路径
+            if result_dict.get("image_path"):
+                image_abs_path = Path(result_dict["image_path"]).resolve()
+                try:
+                    relative_path = os.path.relpath(image_abs_path, output_path)
+                    result_dict["image_path"] = relative_path.replace("\\", "/")
+                except ValueError:
+                    # Windows 跨驱动器时无法计算相对路径，保持原样
+                    pass
+            results_data.append(result_dict)
+
         report_data = {
             "summary": {
                 "total": len(results),
@@ -333,7 +349,7 @@ def detect_batch(
                 "abnormal": abnormal_count,
                 "issue_distribution": issue_counts,
             },
-            "results": [r.to_dict() for r in results],
+            "results": results_data,
         }
 
         report_path = os.path.join(output, "report.json")

@@ -1,0 +1,152 @@
+{
+  "image_id": "",
+  "image_path": "./pic/black.webp",
+  "image_size": [
+    474,
+    265
+  ],
+  "is_abnormal": true,
+  "primary_issue": "grayscale",
+  "severity": "info",
+  "scores": {
+    "signal_loss": 55.3785,
+    "color": 7.3446,
+    "occlusion": 0.0012,
+    "brightness": 55.3785,
+    "blur": 321.607,
+    "noise": 5.7809,
+    "contrast": 63.6416,
+    "stripe": 0.0029
+  },
+  "detection_results": [
+    {
+      "detector_name": "signal_loss",
+      "issue_type": "signal_normal",
+      "is_abnormal": false,
+      "score": 55.3785,
+      "threshold": 10.0,
+      "confidence": 0.4326,
+      "severity": "normal",
+      "explanation": "信号正常",
+      "possible_causes": [],
+      "suggestions": [],
+      "process_time_ms": 39.01,
+      "detection_level": "STANDARD"
+    },
+    {
+      "detector_name": "color",
+      "issue_type": "grayscale",
+      "is_abnormal": true,
+      "score": 7.3446,
+      "threshold": 10.0,
+      "confidence": 0.2655,
+      "severity": "info",
+      "explanation": "图像饱和度7.3，画面接近黑白/灰度",
+      "possible_causes": [
+        "摄像头处于黑白模式",
+        "夜视模式已启用",
+        "色彩传感器故障",
+        "ISP处理异常"
+      ],
+      "suggestions": [
+        "检查摄像头是否处于夜视模式",
+        "调整摄像头彩色/黑白设置",
+        "检查环境光线是否充足"
+      ],
+      "process_time_ms": 55.46,
+      "detection_level": "STANDARD"
+    },
+    {
+      "detector_name": "occlusion",
+      "issue_type": "occlusion_normal",
+      "is_abnormal": false,
+      "score": 0.0012,
+      "threshold": 0.3,
+      "confidence": 0.996,
+      "severity": "normal",
+      "explanation": "画面未检测到明显遮挡",
+      "possible_causes": [],
+      "suggestions": [],
+      "process_time_ms": 130.14,
+      "detection_level": "STANDARD"
+    },
+    {
+      "detector_name": "brightness",
+      "issue_type": "brightness_normal",
+      "is_abnormal": false,
+      "score": 55.3785,
+      "threshold": 20.0,
+      "confidence": 0.3291,
+      "severity": "normal",
+      "explanation": "图像平均亮度55.4，亮度正常",
+      "possible_causes": [],
+      "suggestions": [],
+      "process_time_ms": 56.59,
+      "detection_level": "STANDARD"
+    },
+    {
+      "detector_name": "blur",
+      "issue_type": "blur",
+      "is_abnormal": false,
+      "score": 321.607,
+      "threshold": 100.0,
+      "confidence": 1.0,
+      "severity": "normal",
+      "explanation": "图像清晰度评分321.6，画面清晰度正常",
+      "possible_causes": [],
+      "suggestions": [],
+      "process_time_ms": 39.0,
+      "detection_level": "STANDARD"
+    },
+    {
+      "detector_name": "noise",
+      "issue_type": "noise_normal",
+      "is_abnormal": false,
+      "score": 5.7809,
+      "threshold": 15.0,
+      "confidence": 0.6146,
+      "severity": "normal",
+      "explanation": "噪声水平5.8，在正常范围内",
+      "possible_causes": [],
+      "suggestions": [],
+      "process_time_ms": 60.65,
+      "detection_level": "STANDARD"
+    },
+    {
+      "detector_name": "contrast",
+      "issue_type": "contrast_normal",
+      "is_abnormal": false,
+      "score": 63.6416,
+      "threshold": 30.0,
+      "confidence": 1.0,
+      "severity": "normal",
+      "explanation": "图像对比度63.6，对比度正常",
+      "possible_causes": [],
+      "suggestions": [],
+      "process_time_ms": 18.15,
+      "detection_level": "STANDARD"
+    },
+    {
+      "detector_name": "stripe",
+      "issue_type": "stripe_normal",
+      "is_abnormal": false,
+      "score": 0.0029,
+      "threshold": 0.3,
+      "confidence": 0.9903,
+      "severity": "normal",
+      "explanation": "未检测到明显条纹干扰",
+      "possible_causes": [],
+      "suggestions": [],
+      "process_time_ms": 55.36,
+      "detection_level": "STANDARD"
+    }
+  ],
+  "suppressed_issues": [],
+  "independent_issues": [
+    "grayscale"
+  ],
+  "total_process_time_ms": 133.52,
+  "detection_level": "STANDARD",
+  "config_profile": "normal",
+  "timestamp": "2026-01-07T23:31:34.247175"
+}

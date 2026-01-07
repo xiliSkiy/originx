@@ -1,0 +1,1689 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OriginX 批量诊断结果</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Noto+Sans+SC:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-primary: #0a0e17;
+            --bg-secondary: #111827;
+            --bg-card: #1a2234;
+            --bg-card-hover: #1f2937;
+            --accent-cyan: #06b6d4;
+            --accent-emerald: #10b981;
+            --accent-amber: #f59e0b;
+            --accent-rose: #f43f5e;
+            --accent-violet: #8b5cf6;
+            --accent-blue: #3b82f6;
+            --text-primary: #f1f5f9;
+            --text-secondary: #94a3b8;
+            --text-muted: #64748b;
+            --border-color: #2d3748;
+            --glow-cyan: 0 0 20px rgba(6, 182, 212, 0.3);
+            --glow-emerald: 0 0 20px rgba(16, 185, 129, 0.3);
+            --glow-rose: 0 0 20px rgba(244, 63, 94, 0.3);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Noto Sans SC', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            min-height: 100vh;
+            line-height: 1.6;
+        }
+
+        /* 动态背景 */
+        .bg-pattern {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: 
+                radial-gradient(circle at 20% 80%, rgba(6, 182, 212, 0.05) 0%, transparent 50%),
+                radial-gradient(circle at 80% 20%, rgba(139, 92, 246, 0.05) 0%, transparent 50%),
+                linear-gradient(rgba(6, 182, 212, 0.02) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(6, 182, 212, 0.02) 1px, transparent 1px);
+            background-size: 100% 100%, 100% 100%, 40px 40px, 40px 40px;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .container {
+            position: relative;
+            z-index: 1;
+            max-width: 1800px;
+            margin: 0 auto;
+            padding: 1.5rem 2rem;
+        }
+
+        /* 头部 */
+        .header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 2rem;
+            padding-bottom: 1.5rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .logo-icon {
+            width: 48px;
+            height: 48px;
+            background: linear-gradient(135deg, var(--accent-cyan), var(--accent-violet));
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: 'JetBrains Mono', monospace;
+            font-weight: 700;
+            font-size: 1.2rem;
+            box-shadow: var(--glow-cyan);
+        }
+
+        .logo-text {
+            font-size: 1.5rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, var(--accent-cyan), var(--accent-emerald));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .logo-subtitle {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+        }
+
+        .header-actions {
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+        }
+
+        .view-toggle {
+            display: flex;
+            background: var(--bg-card);
+            border-radius: 8px;
+            padding: 4px;
+            border: 1px solid var(--border-color);
+        }
+
+        .view-btn {
+            padding: 0.5rem 1rem;
+            border: none;
+            background: transparent;
+            color: var(--text-muted);
+            cursor: pointer;
+            border-radius: 6px;
+            font-size: 0.85rem;
+            transition: all 0.2s;
+        }
+
+        .view-btn.active {
+            background: var(--accent-cyan);
+            color: white;
+        }
+
+        .view-btn:hover:not(.active) {
+            color: var(--text-primary);
+        }
+
+        /* 统计概览区 */
+        .stats-section {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr) 1.5fr;
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        @media (max-width: 1400px) {
+            .stats-section {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        @media (max-width: 768px) {
+            .stats-section {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .stat-card {
+            background: var(--bg-card);
+            border-radius: 16px;
+            padding: 1.5rem;
+            border: 1px solid var(--border-color);
+            position: relative;
+            overflow: hidden;
+            transition: all 0.3s ease;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+        }
+
+        .stat-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+        }
+
+        .stat-card.total::before { background: linear-gradient(90deg, var(--accent-blue), var(--accent-cyan)); }
+        .stat-card.normal::before { background: linear-gradient(90deg, var(--accent-emerald), var(--accent-cyan)); }
+        .stat-card.abnormal::before { background: linear-gradient(90deg, var(--accent-amber), var(--accent-rose)); }
+        .stat-card.rate::before { background: linear-gradient(90deg, var(--accent-violet), var(--accent-rose)); }
+
+        .stat-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .stat-card.total .stat-icon { background: rgba(59, 130, 246, 0.15); }
+        .stat-card.normal .stat-icon { background: rgba(16, 185, 129, 0.15); }
+        .stat-card.abnormal .stat-icon { background: rgba(244, 63, 94, 0.15); }
+        .stat-card.rate .stat-icon { background: rgba(139, 92, 246, 0.15); }
+
+        .stat-label {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            margin-bottom: 0.5rem;
+        }
+
+        .stat-value {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 2.5rem;
+            font-weight: 700;
+        }
+
+        .stat-card.total .stat-value { color: var(--accent-blue); }
+        .stat-card.normal .stat-value { color: var(--accent-emerald); }
+        .stat-card.abnormal .stat-value { color: var(--accent-rose); }
+        .stat-card.rate .stat-value { color: var(--accent-violet); }
+
+        .stat-unit {
+            font-size: 1rem;
+            color: var(--text-muted);
+            margin-left: 0.25rem;
+        }
+
+        /* 问题分布卡片 */
+        .distribution-card {
+            grid-column: span 1;
+            background: var(--bg-card);
+            border-radius: 16px;
+            padding: 1.5rem;
+            border: 1px solid var(--border-color);
+        }
+
+        @media (max-width: 1400px) {
+            .distribution-card {
+                grid-column: span 2;
+            }
+        }
+
+        .distribution-title {
+            font-size: 0.9rem;
+            color: var(--text-muted);
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .distribution-list {
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+        }
+
+        .distribution-item {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .distribution-bar-bg {
+            flex: 1;
+            height: 24px;
+            background: var(--bg-secondary);
+            border-radius: 6px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .distribution-bar {
+            height: 100%;
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            padding-left: 0.75rem;
+            font-size: 0.75rem;
+            font-weight: 500;
+            transition: width 0.5s ease;
+        }
+
+        .distribution-count {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+            min-width: 30px;
+            text-align: right;
+        }
+
+        /* 筛选栏 */
+        .filter-bar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 1.5rem;
+            padding: 1rem 1.5rem;
+            background: var(--bg-card);
+            border-radius: 12px;
+            border: 1px solid var(--border-color);
+        }
+
+        .filter-tabs {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .filter-tab {
+            padding: 0.5rem 1.25rem;
+            border: none;
+            background: transparent;
+            color: var(--text-muted);
+            cursor: pointer;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .filter-tab:hover {
+            background: var(--bg-secondary);
+            color: var(--text-primary);
+        }
+
+        .filter-tab.active {
+            background: var(--accent-cyan);
+            color: white;
+        }
+
+        .filter-tab .count {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.75rem;
+            padding: 0.15rem 0.5rem;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 10px;
+        }
+
+        .filter-tab:not(.active) .count {
+            background: var(--bg-primary);
+        }
+
+        .sort-select {
+            padding: 0.5rem 1rem;
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            color: var(--text-primary);
+            border-radius: 8px;
+            font-size: 0.85rem;
+            cursor: pointer;
+        }
+
+        /* 图片网格 */
+        .image-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .image-card {
+            background: var(--bg-card);
+            border-radius: 16px;
+            border: 1px solid var(--border-color);
+            overflow: hidden;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .image-card:hover {
+            transform: translateY(-6px);
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.4);
+            border-color: var(--accent-cyan);
+        }
+
+        .image-card.abnormal {
+            border-color: rgba(244, 63, 94, 0.3);
+        }
+
+        .image-card.abnormal:hover {
+            border-color: var(--accent-rose);
+        }
+
+        .card-image {
+            position: relative;
+            height: 200px;
+            overflow: hidden;
+            background: var(--bg-secondary);
+        }
+
+        .card-image img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform 0.3s ease;
+        }
+
+        .image-card:hover .card-image img {
+            transform: scale(1.05);
+        }
+
+        .card-badges {
+            position: absolute;
+            top: 0.75rem;
+            left: 0.75rem;
+            right: 0.75rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+        }
+
+        .status-badge {
+            padding: 0.35rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            backdrop-filter: blur(8px);
+        }
+
+        .status-badge.normal {
+            background: rgba(16, 185, 129, 0.9);
+            color: white;
+        }
+
+        .status-badge.abnormal {
+            background: rgba(244, 63, 94, 0.9);
+            color: white;
+        }
+
+        .severity-indicator {
+            padding: 0.35rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.7rem;
+            font-weight: 500;
+            backdrop-filter: blur(8px);
+            background: rgba(10, 14, 23, 0.8);
+            color: var(--text-secondary);
+            border: 1px solid var(--border-color);
+        }
+
+        .card-content {
+            padding: 1.25rem;
+        }
+
+        .card-filename {
+            font-size: 0.9rem;
+            font-weight: 600;
+            margin-bottom: 0.75rem;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .card-issue {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin-bottom: 1rem;
+            padding: 0.5rem 0.75rem;
+            background: var(--bg-secondary);
+            border-radius: 8px;
+            font-size: 0.85rem;
+        }
+
+        .card-issue.normal {
+            color: var(--accent-emerald);
+        }
+
+        .card-issue.abnormal {
+            color: var(--accent-rose);
+        }
+
+        .card-metrics {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 0.5rem;
+        }
+
+        .card-metric {
+            text-align: center;
+            padding: 0.5rem;
+            background: var(--bg-secondary);
+            border-radius: 6px;
+        }
+
+        .card-metric-label {
+            font-size: 0.65rem;
+            color: var(--text-muted);
+            margin-bottom: 0.25rem;
+        }
+
+        .card-metric-value {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+
+        .card-metric-value.good { color: var(--accent-emerald); }
+        .card-metric-value.bad { color: var(--accent-rose); }
+
+        /* 列表视图 */
+        .image-list {
+            display: none;
+            flex-direction: column;
+            gap: 0.75rem;
+        }
+
+        .image-list.active {
+            display: flex;
+        }
+
+        .image-grid.active {
+            display: grid;
+        }
+
+        .image-grid:not(.active) {
+            display: none;
+        }
+
+        .list-item {
+            display: grid;
+            grid-template-columns: 120px 1fr auto;
+            gap: 1.5rem;
+            align-items: center;
+            padding: 1rem 1.5rem;
+            background: var(--bg-card);
+            border-radius: 12px;
+            border: 1px solid var(--border-color);
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .list-item:hover {
+            border-color: var(--accent-cyan);
+            background: var(--bg-card-hover);
+        }
+
+        .list-item.abnormal {
+            border-left: 3px solid var(--accent-rose);
+        }
+
+        .list-item.normal {
+            border-left: 3px solid var(--accent-emerald);
+        }
+
+        .list-thumb {
+            width: 120px;
+            height: 68px;
+            border-radius: 8px;
+            overflow: hidden;
+            background: var(--bg-secondary);
+        }
+
+        .list-thumb img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .list-info {
+            display: flex;
+            flex-direction: column;
+            gap: 0.35rem;
+        }
+
+        .list-filename {
+            font-weight: 600;
+            font-size: 0.95rem;
+        }
+
+        .list-issue {
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+        }
+
+        .list-issue.abnormal { color: var(--accent-rose); }
+        .list-issue.normal { color: var(--accent-emerald); }
+
+        .list-meta {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+        }
+
+        .list-status {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .list-badge {
+            padding: 0.35rem 0.75rem;
+            border-radius: 6px;
+            font-size: 0.75rem;
+            font-weight: 500;
+        }
+
+        .list-badge.normal {
+            background: rgba(16, 185, 129, 0.15);
+            color: var(--accent-emerald);
+        }
+
+        .list-badge.abnormal {
+            background: rgba(244, 63, 94, 0.15);
+            color: var(--accent-rose);
+        }
+
+        /* 详情弹窗 */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(8px);
+            z-index: 1000;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem;
+        }
+
+        .modal-overlay.active {
+            display: flex;
+        }
+
+        .modal {
+            background: var(--bg-card);
+            border-radius: 20px;
+            border: 1px solid var(--border-color);
+            max-width: 1400px;
+            width: 95%;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            animation: modalIn 0.3s ease;
+        }
+
+        @keyframes modalIn {
+            from {
+                opacity: 0;
+                transform: scale(0.95) translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: scale(1) translateY(0);
+            }
+        }
+
+        .modal-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0.75rem 1rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .modal-title {
+            font-size: 1rem;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .modal-close {
+            width: 30px;
+            height: 30px;
+            border: none;
+            background: var(--bg-secondary);
+            color: var(--text-muted);
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 1.1rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
+        }
+
+        .modal-close:hover {
+            background: var(--accent-rose);
+            color: white;
+        }
+
+        .modal-body {
+            padding: 0;
+        }
+
+        /* ========== 仪表盘式详情布局 ========== */
+        .dashboard {
+            display: grid;
+            grid-template-columns: 220px 1fr;
+            min-height: 320px;
+        }
+
+        /* 左侧面板 - 图片+状态 */
+        .dash-sidebar {
+            background: linear-gradient(180deg, var(--bg-secondary) 0%, var(--bg-primary) 100%);
+            padding: 1rem;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 0.75rem;
+            border-right: 1px solid var(--border-color);
+        }
+
+        .dash-image {
+            width: 100%;
+            aspect-ratio: 4/3;
+            border-radius: 10px;
+            overflow: hidden;
+            background: var(--bg-primary);
+            box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+        }
+
+        .dash-image img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+        }
+
+        /* 状态徽章 */
+        .dash-badge {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            font-weight: 600;
+            font-size: 0.85rem;
+        }
+
+        .dash-badge.normal {
+            background: rgba(16, 185, 129, 0.15);
+            color: var(--accent-emerald);
+            border: 1px solid rgba(16, 185, 129, 0.3);
+        }
+
+        .dash-badge.abnormal {
+            background: rgba(244, 63, 94, 0.15);
+            color: var(--accent-rose);
+            border: 1px solid rgba(244, 63, 94, 0.3);
+        }
+
+        .dash-badge-icon {
+            font-size: 1.1rem;
+        }
+
+        /* 主要问题 */
+        .dash-issue {
+            background: var(--bg-primary);
+            border-radius: 8px;
+            padding: 0.5rem 0.75rem;
+            text-align: center;
+            width: 100%;
+        }
+
+        .dash-issue-label {
+            font-size: 0.65rem;
+            color: var(--text-muted);
+            margin-bottom: 0.2rem;
+        }
+
+        .dash-issue-value {
+            font-size: 0.8rem;
+            font-weight: 600;
+            color: var(--accent-amber);
+        }
+
+        /* 元信息 */
+        .dash-meta {
+            display: flex;
+            gap: 1rem;
+            font-size: 0.7rem;
+            color: var(--text-muted);
+        }
+
+        .dash-meta-item {
+            display: flex;
+            align-items: center;
+            gap: 0.25rem;
+        }
+
+        /* 右侧主区域 */
+        .dash-main {
+            padding: 1rem;
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+        }
+
+        /* 指标网格 - 圆环仪表盘风格 */
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 0.5rem;
+        }
+
+        .metric-card {
+            background: var(--bg-secondary);
+            border-radius: 10px;
+            padding: 0.6rem;
+            display: flex;
+            align-items: center;
+            gap: 0.6rem;
+            border: 1px solid var(--border-color);
+            transition: all 0.2s;
+            cursor: default;
+        }
+
+        .metric-card:hover {
+            border-color: var(--accent-cyan);
+            transform: translateY(-1px);
+        }
+
+        .metric-card.abnormal {
+            background: rgba(244, 63, 94, 0.08);
+            border-color: rgba(244, 63, 94, 0.3);
+        }
+
+        /* 圆环进度 */
+        .metric-ring {
+            width: 44px;
+            height: 44px;
+            position: relative;
+            flex-shrink: 0;
+        }
+
+        .metric-ring svg {
+            transform: rotate(-90deg);
+        }
+
+        .metric-ring-bg {
+            fill: none;
+            stroke: var(--bg-primary);
+            stroke-width: 4;
+        }
+
+        .metric-ring-fill {
+            fill: none;
+            stroke-width: 4;
+            stroke-linecap: round;
+            transition: stroke-dashoffset 0.5s ease;
+        }
+
+        .metric-ring-fill.normal {
+            stroke: var(--accent-emerald);
+        }
+
+        .metric-ring-fill.abnormal {
+            stroke: var(--accent-rose);
+        }
+
+        .metric-ring-icon {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 0.9rem;
+        }
+
+        .metric-info {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .metric-name {
+            font-size: 0.7rem;
+            color: var(--text-muted);
+            margin-bottom: 0.15rem;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .metric-score {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.95rem;
+            font-weight: 700;
+        }
+
+        .metric-score.normal { color: var(--accent-emerald); }
+        .metric-score.abnormal { color: var(--accent-rose); }
+
+        .metric-threshold {
+            font-size: 0.6rem;
+            color: var(--text-muted);
+        }
+
+        /* 建议区域 */
+        .suggestions-bar {
+            background: var(--bg-secondary);
+            border-radius: 10px;
+            padding: 0.75rem 1rem;
+            border-left: 3px solid var(--accent-amber);
+        }
+
+        .suggestions-bar.empty {
+            border-left-color: var(--accent-emerald);
+            text-align: center;
+            color: var(--text-muted);
+        }
+
+        .suggestions-bar-header {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .suggestions-bar-title {
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: var(--accent-amber);
+        }
+
+        .suggestions-bar-count {
+            font-size: 0.65rem;
+            padding: 0.1rem 0.4rem;
+            background: rgba(245, 158, 11, 0.2);
+            border-radius: 10px;
+            color: var(--accent-amber);
+        }
+
+        .suggestions-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+        }
+
+        .suggestion-chip {
+            display: flex;
+            align-items: center;
+            gap: 0.35rem;
+            padding: 0.3rem 0.6rem;
+            background: var(--bg-primary);
+            border-radius: 6px;
+            font-size: 0.7rem;
+            color: var(--text-secondary);
+        }
+
+        .suggestion-chip-icon {
+            font-size: 0.75rem;
+        }
+
+        /* 底部详情面板 - 悬停时显示 */
+        .metric-detail-panel {
+            background: var(--bg-secondary);
+            border-radius: 10px;
+            padding: 0.75rem 1rem;
+            margin-top: 0.5rem;
+            display: flex;
+            align-items: center;
+            gap: 1.5rem;
+            min-height: 50px;
+            border: 1px solid var(--border-color);
+            transition: all 0.2s;
+        }
+
+        .metric-detail-panel.active {
+            border-color: var(--accent-cyan);
+            background: linear-gradient(135deg, rgba(34, 211, 238, 0.05) 0%, transparent 100%);
+        }
+
+        .metric-detail-panel .detail-icon {
+            font-size: 1.5rem;
+            flex-shrink: 0;
+        }
+
+        .metric-detail-panel .detail-main {
+            flex: 1;
+            display: flex;
+            gap: 1.5rem;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .metric-detail-panel .detail-name {
+            font-weight: 600;
+            font-size: 0.9rem;
+            min-width: 80px;
+        }
+
+        .metric-detail-panel .detail-stats {
+            display: flex;
+            gap: 1rem;
+        }
+
+        .metric-detail-panel .detail-stat {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 0 0.75rem;
+            border-right: 1px solid var(--border-color);
+        }
+
+        .metric-detail-panel .detail-stat:last-child {
+            border-right: none;
+        }
+
+        .metric-detail-panel .detail-stat-label {
+            font-size: 0.65rem;
+            color: var(--text-muted);
+        }
+
+        .metric-detail-panel .detail-stat-value {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.85rem;
+            font-weight: 600;
+        }
+
+        .metric-detail-panel .detail-stat-value.normal { color: var(--accent-emerald); }
+        .metric-detail-panel .detail-stat-value.abnormal { color: var(--accent-rose); }
+
+        .metric-detail-panel .detail-desc {
+            flex: 1;
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+            line-height: 1.4;
+            min-width: 200px;
+        }
+
+        .metric-detail-panel .detail-placeholder {
+            color: var(--text-muted);
+            font-size: 0.8rem;
+        }
+
+
+
+        /* 空状态 */
+        .empty-state {
+            text-align: center;
+            padding: 4rem 2rem;
+            color: var(--text-muted);
+        }
+
+        .empty-icon {
+            font-size: 4rem;
+            margin-bottom: 1rem;
+        }
+
+        /* 加载状态 */
+        .loading {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 400px;
+            gap: 1.5rem;
+        }
+
+        .loading-spinner {
+            width: 48px;
+            height: 48px;
+            border: 3px solid var(--border-color);
+            border-top-color: var(--accent-cyan);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* 动画 */
+        .fade-in {
+            animation: fadeIn 0.5s ease forwards;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* 页脚 */
+        .footer {
+            margin-top: 3rem;
+            padding: 1.5rem 0;
+            border-top: 1px solid var(--border-color);
+            text-align: center;
+            color: var(--text-muted);
+            font-size: 0.8rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="bg-pattern"></div>
+    
+    <div class="container">
+        <header class="header fade-in">
+            <div class="logo">
+                <div class="logo-icon">OX</div>
+                <div>
+                    <div class="logo-text">OriginX</div>
+                    <div class="logo-subtitle">批量图像质量诊断</div>
+                </div>
+            </div>
+            <div class="header-actions">
+                <div class="view-toggle">
+                    <button class="view-btn active" data-view="grid">📊 网格</button>
+                    <button class="view-btn" data-view="list">📋 列表</button>
+                </div>
+            </div>
+        </header>
+
+        <div id="content">
+            <div class="loading">
+                <div class="loading-spinner"></div>
+                <div>正在加载诊断结果...</div>
+            </div>
+        </div>
+
+        <footer class="footer">
+            OriginX v1.0.0 | 图像质量诊断系统
+        </footer>
+    </div>
+
+    <!-- 详情弹窗 -->
+    <div class="modal-overlay" id="modal">
+        <div class="modal">
+            <div class="modal-header">
+                <div class="modal-title">
+                    <span>📷</span>
+                    <span id="modal-filename">图片详情</span>
+                </div>
+                <button class="modal-close" onclick="closeModal()">×</button>
+            </div>
+            <div class="modal-body" id="modal-body">
+                <!-- 动态内容 -->
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 问题类型中文映射
+        const ISSUE_TYPE_MAP = {
+            'signal_loss': '信号丢失',
+            'signal_normal': '信号正常',
+            'black_screen': '黑屏',
+            'white_screen': '白屏',
+            'color': '颜色异常',
+            'color_normal': '颜色正常',
+            'color_cast': '色偏',
+            'grayscale': '黑白画面',
+            'blue_screen': '蓝屏',
+            'green_screen': '绿屏',
+            'occlusion': '画面遮挡',
+            'occlusion_normal': '无遮挡',
+            'brightness': '亮度异常',
+            'brightness_normal': '亮度正常',
+            'overexposure': '过曝',
+            'underexposure': '欠曝',
+            'too_bright': '过亮',
+            'too_dark': '过暗',
+            'blur': '画面模糊',
+            'blur_normal': '画面清晰',
+            'motion_blur': '运动模糊',
+            'defocus': '失焦',
+            'noise': '噪声干扰',
+            'noise_normal': '噪声正常',
+            'gaussian_noise': '高斯噪声',
+            'salt_pepper_noise': '椒盐噪声',
+            'snow': '雪花噪声',
+            'contrast': '对比度异常',
+            'contrast_normal': '对比度正常',
+            'low_contrast': '低对比度',
+            'high_contrast': '高对比度',
+            'stripe': '条纹干扰',
+            'stripe_normal': '无条纹',
+            'horizontal_stripe': '水平条纹',
+            'vertical_stripe': '垂直条纹',
+            'color_stripe': '彩色条纹'
+        };
+
+        const DETECTOR_NAMES = {
+            'signal_loss': { name: '信号', icon: '📡' },
+            'color': { name: '颜色', icon: '🎨' },
+            'occlusion': { name: '遮挡', icon: '🚫' },
+            'brightness': { name: '亮度', icon: '☀️' },
+            'blur': { name: '清晰度', icon: '🔍' },
+            'noise': { name: '噪声', icon: '📊' },
+            'contrast': { name: '对比度', icon: '◐' },
+            'stripe': { name: '条纹', icon: '▤' }
+        };
+
+        const SEVERITY_MAP = {
+            'normal': { text: '正常', color: '#10b981' },
+            'info': { text: '提示', color: '#f59e0b' },
+            'warning': { text: '警告', color: '#f43f5e' },
+            'error': { text: '错误', color: '#f43f5e' },
+            'critical': { text: '严重', color: '#dc2626' }
+        };
+
+        const ISSUE_COLORS = [
+            '#f43f5e', '#f59e0b', '#8b5cf6', '#06b6d4', '#10b981', '#3b82f6'
+        ];
+
+        let reportData = null;
+        let currentFilter = 'all';
+        let currentView = 'grid';
+
+        function getIssueTypeName(type) {
+            return ISSUE_TYPE_MAP[type] || type;
+        }
+
+        function getFilename(path) {
+            return path.split('/').pop();
+        }
+
+        function getImagePath(path) {
+            // image_path 是相对于报告文件(result/report.json)所在目录的相对路径
+            // 例如: ../OIP.jpg 表示从 result/ 目录上级找到 OIP.jpg
+            // 从 index.html 的角度，需要解析这个相对路径
+            // result/../OIP.jpg 简化为 OIP.jpg
+            if (path.startsWith('../')) {
+                // 相对于 result 目录的上级，就是当前 index.html 所在目录
+                return path.substring(3);  // 去掉 '../'
+            }
+            // 如果是其他格式的路径，尝试拼接
+            return 'result/' + path;
+        }
+
+        // 加载数据
+        async function loadReport() {
+            try {
+                const response = await fetch('result/report.json');
+                if (!response.ok) throw new Error('无法加载 report.json');
+                reportData = await response.json();
+                renderPage();
+            } catch (error) {
+                document.getElementById('content').innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-icon">⚠️</div>
+                        <h3>加载失败</h3>
+                        <p>${error.message}</p>
+                        <p style="margin-top: 1rem; font-size: 0.85rem;">请确保 result/report.json 文件存在</p>
+                    </div>
+                `;
+            }
+        }
+
+        // 渲染页面
+        function renderPage() {
+            const { summary, results } = reportData;
+            const abnormalRate = summary.total > 0 ? ((summary.abnormal / summary.total) * 100).toFixed(1) : 0;
+
+            // 问题分布
+            const issueEntries = Object.entries(summary.issue_distribution);
+            const maxIssueCount = Math.max(...issueEntries.map(([_, count]) => count), 1);
+
+            const distributionHTML = issueEntries.length > 0 ? issueEntries.map(([issue, count], index) => {
+                const percent = (count / maxIssueCount) * 100;
+                const color = ISSUE_COLORS[index % ISSUE_COLORS.length];
+                return `
+                    <div class="distribution-item">
+                        <div class="distribution-bar-bg">
+                            <div class="distribution-bar" style="width: ${percent}%; background: ${color};">
+                                ${getIssueTypeName(issue)}
+                            </div>
+                        </div>
+                        <div class="distribution-count">${count}</div>
+                    </div>
+                `;
+            }).join('') : '<div style="color: var(--text-muted); text-align: center; padding: 1rem;">暂无问题</div>';
+
+            const html = `
+                <section class="stats-section fade-in">
+                    <div class="stat-card total">
+                        <div class="stat-icon">📷</div>
+                        <div class="stat-label">总检测数</div>
+                        <div class="stat-value">${summary.total}<span class="stat-unit">张</span></div>
+                    </div>
+                    <div class="stat-card normal">
+                        <div class="stat-icon">✅</div>
+                        <div class="stat-label">正常图片</div>
+                        <div class="stat-value">${summary.normal}<span class="stat-unit">张</span></div>
+                    </div>
+                    <div class="stat-card abnormal">
+                        <div class="stat-icon">⚠️</div>
+                        <div class="stat-label">异常图片</div>
+                        <div class="stat-value">${summary.abnormal}<span class="stat-unit">张</span></div>
+                    </div>
+                    <div class="stat-card rate">
+                        <div class="stat-icon">📊</div>
+                        <div class="stat-label">异常率</div>
+                        <div class="stat-value">${abnormalRate}<span class="stat-unit">%</span></div>
+                    </div>
+                    <div class="distribution-card">
+                        <div class="distribution-title">
+                            <span>📈</span>
+                            问题分布
+                        </div>
+                        <div class="distribution-list">
+                            ${distributionHTML}
+                        </div>
+                    </div>
+                </section>
+
+                <div class="filter-bar fade-in" style="animation-delay: 0.1s">
+                    <div class="filter-tabs">
+                        <button class="filter-tab active" data-filter="all">
+                            全部 <span class="count">${summary.total}</span>
+                        </button>
+                        <button class="filter-tab" data-filter="normal">
+                            ✅ 正常 <span class="count">${summary.normal}</span>
+                        </button>
+                        <button class="filter-tab" data-filter="abnormal">
+                            ⚠️ 异常 <span class="count">${summary.abnormal}</span>
+                        </button>
+                    </div>
+                    <select class="sort-select" id="sortSelect">
+                        <option value="default">默认排序</option>
+                        <option value="abnormal-first">异常优先</option>
+                        <option value="normal-first">正常优先</option>
+                        <option value="time">处理时间</option>
+                    </select>
+                </div>
+
+                <div class="image-grid active" id="imageGrid">
+                    ${renderGridItems(results)}
+                </div>
+
+                <div class="image-list" id="imageList">
+                    ${renderListItems(results)}
+                </div>
+            `;
+
+            document.getElementById('content').innerHTML = html;
+            bindEvents();
+        }
+
+        // 渲染网格项
+        function renderGridItems(results) {
+            const filtered = filterResults(results);
+            if (filtered.length === 0) {
+                return '<div class="empty-state" style="grid-column: 1/-1;"><div class="empty-icon">📭</div><p>没有符合条件的图片</p></div>';
+            }
+
+            return filtered.map((result, index) => {
+                const filename = getFilename(result.image_path);
+                const imagePath = getImagePath(result.image_path);
+                const isAbnormal = result.is_abnormal;
+                const severity = SEVERITY_MAP[result.severity] || SEVERITY_MAP.normal;
+                const primaryIssue = result.primary_issue ? getIssueTypeName(result.primary_issue) : '无异常';
+
+                // 获取关键指标
+                const blurScore = result.scores.blur?.toFixed(0) || '-';
+                const noiseScore = result.scores.noise?.toFixed(1) || '-';
+                const contrastScore = result.scores.contrast?.toFixed(1) || '-';
+
+                const blurResult = result.detection_results?.find(r => r.detector_name === 'blur');
+                const noiseResult = result.detection_results?.find(r => r.detector_name === 'noise');
+                const contrastResult = result.detection_results?.find(r => r.detector_name === 'contrast');
+
+                return `
+                    <div class="image-card ${isAbnormal ? 'abnormal' : 'normal'} fade-in" 
+                         style="animation-delay: ${0.05 * index}s"
+                         onclick="showDetail(${index})">
+                        <div class="card-image">
+                            <img src="${imagePath}" alt="${filename}" onerror="this.src='data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 width=%22400%22 height=%22200%22><rect fill=%22%231a2234%22 width=%22400%22 height=%22200%22/><text fill=%22%2364748b%22 x=%22200%22 y=%22100%22 text-anchor=%22middle%22>图片加载失败</text></svg>'">
+                            <div class="card-badges">
+                                <span class="status-badge ${isAbnormal ? 'abnormal' : 'normal'}">
+                                    ${isAbnormal ? '异常' : '正常'}
+                                </span>
+                                <span class="severity-indicator">${result.image_size[0]}×${result.image_size[1]}</span>
+                            </div>
+                        </div>
+                        <div class="card-content">
+                            <div class="card-filename" title="${filename}">${filename}</div>
+                            <div class="card-issue ${isAbnormal ? 'abnormal' : 'normal'}">
+                                ${isAbnormal ? '⚠️' : '✅'} ${primaryIssue}
+                            </div>
+                            <div class="card-metrics">
+                                <div class="card-metric">
+                                    <div class="card-metric-label">清晰度</div>
+                                    <div class="card-metric-value ${blurResult?.is_abnormal ? 'bad' : 'good'}">${blurScore}</div>
+                                </div>
+                                <div class="card-metric">
+                                    <div class="card-metric-label">噪声</div>
+                                    <div class="card-metric-value ${noiseResult?.is_abnormal ? 'bad' : 'good'}">${noiseScore}</div>
+                                </div>
+                                <div class="card-metric">
+                                    <div class="card-metric-label">对比度</div>
+                                    <div class="card-metric-value ${contrastResult?.is_abnormal ? 'bad' : 'good'}">${contrastScore}</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        // 渲染列表项
+        function renderListItems(results) {
+            const filtered = filterResults(results);
+            if (filtered.length === 0) {
+                return '<div class="empty-state"><div class="empty-icon">📭</div><p>没有符合条件的图片</p></div>';
+            }
+
+            return filtered.map((result, index) => {
+                const filename = getFilename(result.image_path);
+                const imagePath = getImagePath(result.image_path);
+                const isAbnormal = result.is_abnormal;
+                const primaryIssue = result.primary_issue ? getIssueTypeName(result.primary_issue) : '无异常';
+
+                return `
+                    <div class="list-item ${isAbnormal ? 'abnormal' : 'normal'}" onclick="showDetail(${index})">
+                        <div class="list-thumb">
+                            <img src="${imagePath}" alt="${filename}">
+                        </div>
+                        <div class="list-info">
+                            <div class="list-filename">${filename}</div>
+                            <div class="list-issue ${isAbnormal ? 'abnormal' : 'normal'}">
+                                ${isAbnormal ? '⚠️ ' : '✅ '}${primaryIssue}
+                            </div>
+                            <div class="list-meta">
+                                ${result.image_size[0]}×${result.image_size[1]} · 耗时 ${result.total_process_time_ms.toFixed(1)}ms
+                            </div>
+                        </div>
+                        <div class="list-status">
+                            <span class="list-badge ${isAbnormal ? 'abnormal' : 'normal'}">
+                                ${isAbnormal ? '异常' : '正常'}
+                            </span>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        // 过滤结果
+        function filterResults(results) {
+            let filtered = [...results];
+            
+            if (currentFilter === 'normal') {
+                filtered = filtered.filter(r => !r.is_abnormal);
+            } else if (currentFilter === 'abnormal') {
+                filtered = filtered.filter(r => r.is_abnormal);
+            }
+
+            const sortValue = document.getElementById('sortSelect')?.value || 'default';
+            if (sortValue === 'abnormal-first') {
+                filtered.sort((a, b) => b.is_abnormal - a.is_abnormal);
+            } else if (sortValue === 'normal-first') {
+                filtered.sort((a, b) => a.is_abnormal - b.is_abnormal);
+            } else if (sortValue === 'time') {
+                filtered.sort((a, b) => b.total_process_time_ms - a.total_process_time_ms);
+            }
+
+            return filtered;
+        }
+
+        // 绑定事件
+        function bindEvents() {
+            // 筛选标签
+            document.querySelectorAll('.filter-tab').forEach(tab => {
+                tab.addEventListener('click', () => {
+                    document.querySelectorAll('.filter-tab').forEach(t => t.classList.remove('active'));
+                    tab.classList.add('active');
+                    currentFilter = tab.dataset.filter;
+                    updateResults();
+                });
+            });
+
+            // 排序
+            document.getElementById('sortSelect')?.addEventListener('change', updateResults);
+
+            // 视图切换
+            document.querySelectorAll('.view-btn').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    document.querySelectorAll('.view-btn').forEach(b => b.classList.remove('active'));
+                    btn.classList.add('active');
+                    currentView = btn.dataset.view;
+                    
+                    document.getElementById('imageGrid').classList.toggle('active', currentView === 'grid');
+                    document.getElementById('imageList').classList.toggle('active', currentView === 'list');
+                });
+            });
+        }
+
+        // 更新结果显示
+        function updateResults() {
+            document.getElementById('imageGrid').innerHTML = renderGridItems(reportData.results);
+            document.getElementById('imageList').innerHTML = renderListItems(reportData.results);
+        }
+
+        // 显示详情
+        function showDetail(index) {
+            const filtered = filterResults(reportData.results);
+            const result = filtered[index];
+            if (!result) return;
+
+            const filename = getFilename(result.image_path);
+            const imagePath = getImagePath(result.image_path);
+            const isAbnormal = result.is_abnormal;
+            const abnormalResults = result.detection_results.filter(r => r.is_abnormal);
+
+            document.getElementById('modal-filename').textContent = filename;
+
+            // 生成圆环仪表盘指标卡片
+            const metricsHTML = result.detection_results.map((det, idx) => {
+                const detector = DETECTOR_NAMES[det.detector_name] || { name: det.detector_name, icon: '📊' };
+                const score = det.score;
+                const threshold = det.threshold;
+                
+                // 计算圆环百分比 (0-100)
+                let percent = 0;
+                let maxVal = Math.max(threshold * 2, 100);
+                if (det.detector_name === 'blur') maxVal = Math.max(1000, score * 1.2);
+                else if (det.detector_name === 'brightness' || det.detector_name === 'signal_loss') maxVal = 255;
+                else if (det.detector_name === 'occlusion' || det.detector_name === 'stripe') maxVal = 1;
+                percent = Math.min((score / maxVal) * 100, 100);
+                
+                // SVG圆环参数
+                const radius = 18;
+                const circumference = 2 * Math.PI * radius;
+                const offset = circumference - (percent / 100) * circumference;
+                
+                return `
+                    <div class="metric-card ${det.is_abnormal ? 'abnormal' : ''}" data-metric-idx="${idx}">
+                        <div class="metric-ring">
+                            <svg width="44" height="44" viewBox="0 0 44 44">
+                                <circle class="metric-ring-bg" cx="22" cy="22" r="${radius}"/>
+                                <circle class="metric-ring-fill ${det.is_abnormal ? 'abnormal' : 'normal'}" 
+                                    cx="22" cy="22" r="${radius}"
+                                    stroke-dasharray="${circumference}"
+                                    stroke-dashoffset="${offset}"/>
+                            </svg>
+                            <span class="metric-ring-icon">${detector.icon}</span>
+                        </div>
+                        <div class="metric-info">
+                            <div class="metric-name">${detector.name}</div>
+                            <div class="metric-score ${det.is_abnormal ? 'abnormal' : 'normal'}">${score.toFixed(1)}</div>
+                            <div class="metric-threshold">阈值 ${threshold.toFixed(1)}</div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+            
+            // 存储检测结果供悬停使用
+            window.currentDetailResults = result.detection_results;
+
+            // 生成建议芯片
+            const suggestionsHTML = abnormalResults.length > 0 
+                ? `<div class="suggestions-bar">
+                        <div class="suggestions-bar-header">
+                            <span>💡</span>
+                            <span class="suggestions-bar-title">改进建议</span>
+                            <span class="suggestions-bar-count">${abnormalResults.length}项</span>
+                        </div>
+                        <div class="suggestions-list">
+                            ${abnormalResults.map(det => {
+                                const detector = DETECTOR_NAMES[det.detector_name] || { icon: '📊' };
+                                const suggestion = det.suggestions && det.suggestions[0] ? det.suggestions[0] : '检查设备状态';
+                                return `<div class="suggestion-chip">
+                                    <span class="suggestion-chip-icon">${detector.icon}</span>
+                                    <span>${suggestion}</span>
+                                </div>`;
+                            }).join('')}
+                        </div>
+                    </div>`
+                : `<div class="suggestions-bar empty">✨ 图像质量良好，无需改进</div>`;
+
+            document.getElementById('modal-body').innerHTML = `
+                <div class="dashboard">
+                    <div class="dash-sidebar">
+                        <div class="dash-image">
+                            <img src="${imagePath}" alt="${filename}">
+                        </div>
+                        <div class="dash-badge ${isAbnormal ? 'abnormal' : 'normal'}">
+                            <span class="dash-badge-icon">${isAbnormal ? '⚠️' : '✅'}</span>
+                            <span>${isAbnormal ? '检测到异常' : '图像正常'}</span>
+                        </div>
+                        ${result.primary_issue ? `
+                            <div class="dash-issue">
+                                <div class="dash-issue-label">主要问题</div>
+                                <div class="dash-issue-value">${getIssueTypeName(result.primary_issue)}</div>
+                            </div>
+                        ` : ''}
+                        <div class="dash-meta">
+                            <div class="dash-meta-item">📐 ${result.image_size[0]}×${result.image_size[1]}</div>
+                            <div class="dash-meta-item">⏱️ ${result.total_process_time_ms.toFixed(0)}ms</div>
+                        </div>
+                    </div>
+                    <div class="dash-main">
+                        <div class="metrics-grid">
+                            ${metricsHTML}
+                        </div>
+                        <div class="metric-detail-panel" id="metricDetailPanel">
+                            <span class="detail-placeholder">👆 悬停指标卡片查看详情</span>
+                        </div>
+                        ${suggestionsHTML}
+                    </div>
+                </div>
+            `;
+            
+            // 绑定悬停事件
+            document.querySelectorAll('.metric-card').forEach(card => {
+                card.addEventListener('mouseenter', () => {
+                    const idx = parseInt(card.dataset.metricIdx);
+                    const det = window.currentDetailResults[idx];
+                    if (!det) return;
+                    
+                    const detector = DETECTOR_NAMES[det.detector_name] || { name: det.detector_name, icon: '📊' };
+                    const confidence = (det.confidence * 100).toFixed(0);
+                    const panel = document.getElementById('metricDetailPanel');
+                    
+                    panel.classList.add('active');
+                    panel.innerHTML = `
+                        <span class="detail-icon">${detector.icon}</span>
+                        <div class="detail-main">
+                            <span class="detail-name">${detector.name}</span>
+                            <div class="detail-stats">
+                                <div class="detail-stat">
+                                    <span class="detail-stat-label">状态</span>
+                                    <span class="detail-stat-value ${det.is_abnormal ? 'abnormal' : 'normal'}">${det.is_abnormal ? '异常' : '正常'}</span>
+                                </div>
+                                <div class="detail-stat">
+                                    <span class="detail-stat-label">得分</span>
+                                    <span class="detail-stat-value">${det.score.toFixed(2)}</span>
+                                </div>
+                                <div class="detail-stat">
+                                    <span class="detail-stat-label">阈值</span>
+                                    <span class="detail-stat-value">${det.threshold.toFixed(2)}</span>
+                                </div>
+                                <div class="detail-stat">
+                                    <span class="detail-stat-label">置信度</span>
+                                    <span class="detail-stat-value">${confidence}%</span>
+                                </div>
+                                <div class="detail-stat">
+                                    <span class="detail-stat-label">耗时</span>
+                                    <span class="detail-stat-value">${det.process_time_ms.toFixed(1)}ms</span>
+                                </div>
+                            </div>
+                            <div class="detail-desc">${det.explanation}</div>
+                        </div>
+                    `;
+                });
+                
+                card.addEventListener('mouseleave', () => {
+                    const panel = document.getElementById('metricDetailPanel');
+                    panel.classList.remove('active');
+                    panel.innerHTML = '<span class="detail-placeholder">👆 悬停指标卡片查看详情</span>';
+                });
+            });
+
+            document.getElementById('modal').classList.add('active');
+        }
+
+        // 关闭弹窗
+        function closeModal() {
+            document.getElementById('modal').classList.remove('active');
+        }
+
+        // 点击遮罩关闭
+        document.getElementById('modal').addEventListener('click', (e) => {
+            if (e.target === e.currentTarget) {
+                closeModal();
+            }
+        });
+
+        // ESC 关闭
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') {
+                closeModal();
+            }
+        });
+
+        // 加载数据
+        document.addEventListener('DOMContentLoaded', loadReport);
+    </script>
+</body>
+</html>
+

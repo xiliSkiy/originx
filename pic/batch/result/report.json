@@ -1,0 +1,673 @@
+{
+  "summary": {
+    "total": 3,
+    "normal": 1,
+    "abnormal": 2,
+    "issue_distribution": {
+      "gaussian_noise": 1,
+      "grayscale": 1
+    }
+  },
+  "results": [
+    {
+      "image_id": "",
+      "image_path": "../OIP.jpg",
+      "image_size": [
+        474,
+        316
+      ],
+      "is_abnormal": true,
+      "primary_issue": "gaussian_noise",
+      "severity": "warning",
+      "scores": {
+        "signal_loss": 105.364,
+        "color": 21.8801,
+        "occlusion": 0.0,
+        "brightness": 105.364,
+        "blur": 2367.8466,
+        "noise": 32.6168,
+        "contrast": 54.4963,
+        "stripe": 0.0017
+      },
+      "detection_results": [
+        {
+          "detector_name": "signal_loss",
+          "issue_type": "signal_normal",
+          "is_abnormal": false,
+          "score": 105.364,
+          "threshold": 10.0,
+          "confidence": 0.8232,
+          "severity": "normal",
+          "explanation": "信号正常",
+          "possible_causes": [],
+          "suggestions": [],
+          "evidence": {
+            "mean_brightness": 105.364,
+            "std_brightness": 54.4963,
+            "min_brightness": 0.0,
+            "max_brightness": 255.0,
+            "is_black_screen": false,
+            "is_white_screen": false,
+            "is_solid_color": false,
+            "black_threshold": 10.0
+          },
+          "process_time_ms": 8.56,
+          "detection_level": "FAST"
+        },
+        {
+          "detector_name": "color",
+          "issue_type": "color_normal",
+          "is_abnormal": false,
+          "score": 21.8801,
+          "threshold": 30.0,
+          "confidence": 1.0,
+          "severity": "normal",
+          "explanation": "图像颜色正常",
+          "possible_causes": [],
+          "suggestions": [],
+          "evidence": {
+            "mean_saturation": 111.2488,
+            "b_channel_mean": 73.9159,
+            "g_channel_mean": 114.9662,
+            "r_channel_mean": 98.5059,
+            "rgb_average": 95.796,
+            "max_channel_deviation": 21.8801,
+            "is_grayscale": false,
+            "is_color_cast": false,
+            "blue_screen_confidence": 0.0,
+            "green_screen_confidence": 0.0
+          },
+          "process_time_ms": 7.71,
+          "detection_level": "FAST"
+        },
+        {
+          "detector_name": "occlusion",
+          "issue_type": "occlusion_normal",
+          "is_abnormal": false,
+          "score": 0.0,
+          "threshold": 0.3,
+          "confidence": 1.0,
+          "severity": "normal",
+          "explanation": "画面未检测到明显遮挡",
+          "possible_causes": [],
+          "suggestions": [],
+          "evidence": {
+            "occlusion_score": 0.0,
+            "edge_density": 0.2979,
+            "global_contrast": 54.4963,
+            "hue_std": 30.6375,
+            "saturation_mean": 111.2488,
+            "brightness_range": 255.0,
+            "very_low_texture_ratio": 0.0,
+            "very_uniform_ratio": 0.0,
+            "occlusion_threshold": 0.3,
+            "sub_scores": {
+              "edge_score": 0,
+              "contrast_score": 0,
+              "color_score": 0,
+              "brightness_score": 0,
+              "uniform_score": 0.0
+            }
+          },
+          "process_time_ms": 37.75,
+          "detection_level": "FAST"
+        },
+        {
+          "detector_name": "brightness",
+          "issue_type": "brightness_normal",
+          "is_abnormal": false,
+          "score": 105.364,
+          "threshold": 20.0,
+          "confidence": 0.7941,
+          "severity": "normal",
+          "explanation": "图像平均亮度105.4，亮度正常",
+          "possible_causes": [],
+          "suggestions": [],
+          "evidence": {
+            "mean_brightness": 105.364,
+            "std_brightness": 54.4963,
+            "percentile_5": 31.0,
+            "percentile_95": 217.0,
+            "brightness_min_threshold": 20.0,
+            "brightness_max_threshold": 235.0
+          },
+          "process_time_ms": 18.3,
+          "detection_level": "FAST"
+        },
+        {
+          "detector_name": "blur",
+          "issue_type": "blur",
+          "is_abnormal": false,
+          "score": 2367.8466,
+          "threshold": 100.0,
+          "confidence": 1.0,
+          "severity": "normal",
+          "explanation": "图像清晰度评分2367.8，画面清晰度正常",
+          "possible_causes": [],
+          "suggestions": [],
+          "evidence": {
+            "laplacian_variance": 2367.8466,
+            "method": "fast"
+          },
+          "process_time_ms": 3.2,
+          "detection_level": "FAST"
+        },
+        {
+          "detector_name": "noise",
+          "issue_type": "gaussian_noise",
+          "is_abnormal": true,
+          "score": 32.6168,
+          "threshold": 15.0,
+          "confidence": 1.0,
+          "severity": "warning",
+          "explanation": "检测到高斯噪声，噪声水平32.6，超过阈值15.0",
+          "possible_causes": [
+            "环境光线不足",
+            "摄像头增益设置过高",
+            "高ISO/增益设置",
+            "传感器热噪声",
+            "光线严重不足"
+          ],
+          "suggestions": [
+            "改善环境照明",
+            "降低摄像头增益设置",
+            "启用降噪功能",
+            "考虑更换低噪声摄像头"
+          ],
+          "evidence": {
+            "estimation_method": "laplacian_mad",
+            "noise_sigma": 32.6168,
+            "noise_threshold": 15.0
+          },
+          "process_time_ms": 25.02,
+          "detection_level": "FAST"
+        },
+        {
+          "detector_name": "contrast",
+          "issue_type": "contrast_normal",
+          "is_abnormal": false,
+          "score": 54.4963,
+          "threshold": 30.0,
+          "confidence": 0.8165,
+          "severity": "normal",
+          "explanation": "图像对比度54.5，对比度正常",
+          "possible_causes": [],
+          "suggestions": [],
+          "evidence": {
+            "std_contrast": 54.4963,
+            "dynamic_range": 255.0,
+            "min_value": 0.0,
+            "max_value": 255.0,
+            "contrast_threshold": 30.0
+          },
+          "process_time_ms": 2.72,
+          "detection_level": "FAST"
+        },
+        {
+          "detector_name": "stripe",
+          "issue_type": "stripe_normal",
+          "is_abnormal": false,
+          "score": 0.0017,
+          "threshold": 0.3,
+          "confidence": 0.9945,
+          "severity": "normal",
+          "explanation": "未检测到明显条纹干扰",
+          "possible_causes": [],
+          "suggestions": [],
+          "evidence": {
+            "horizontal_stripe_energy": 0.0014,
+            "vertical_stripe_energy": 0.0017,
+            "stripe_strength": 0.0017,
+            "stripe_direction": "none",
+            "stripe_threshold": 0.3
+          },
+          "process_time_ms": 27.42,
+          "detection_level": "FAST"
+        }
+      ],
+      "suppressed_issues": [],
+      "independent_issues": [
+        "gaussian_noise"
+      ],
+      "total_process_time_ms": 43.12,
+      "detection_level": "FAST",
+      "config_profile": "normal",
+      "timestamp": "2026-01-07T23:57:58.542905"
+    },
+    {
+      "image_id": "",
+      "image_path": "../black.jpg",
+      "image_size": [
+        474,
+        265
+      ],
+      "is_abnormal": true,
+      "primary_issue": "grayscale",
+      "severity": "info",
+      "scores": {
+        "signal_loss": 55.3785,
+        "color": 7.3446,
+        "occlusion": 0.0012,
+        "brightness": 55.3785,
+        "blur": 495.0051,
+        "noise": 2.9652,
+        "contrast": 63.6416,
+        "stripe": 0.0029
+      },
+      "detection_results": [
+        {
+          "detector_name": "signal_loss",
+          "issue_type": "signal_normal",
+          "is_abnormal": false,
+          "score": 55.3785,
+          "threshold": 10.0,
+          "confidence": 0.4326,
+          "severity": "normal",
+          "explanation": "信号正常",
+          "possible_causes": [],
+          "suggestions": [],
+          "evidence": {
+            "mean_brightness": 55.3785,
+            "std_brightness": 63.6416,
+            "min_brightness": 0.0,
+            "max_brightness": 255.0,
+            "is_black_screen": false,
+            "is_white_screen": false,
+            "is_solid_color": false,
+            "black_threshold": 10.0
+          },
+          "process_time_ms": 2.5,
+          "detection_level": "FAST"
+        },
+        {
+          "detector_name": "color",
+          "issue_type": "grayscale",
+          "is_abnormal": true,
+          "score": 7.3446,
+          "threshold": 10.0,
+          "confidence": 0.2655,
+          "severity": "info",
+          "explanation": "图像饱和度7.3，画面接近黑白/灰度",
+          "possible_causes": [
+            "摄像头处于黑白模式",
+            "夜视模式已启用",
+            "色彩传感器故障",
+            "ISP处理异常"
+          ],
+          "suggestions": [
+            "检查摄像头是否处于夜视模式",
+            "调整摄像头彩色/黑白设置",
+            "检查环境光线是否充足"
+          ],
+          "evidence": {
+            "mean_saturation": 7.3446,
+            "b_channel_mean": 55.3433,
+            "g_channel_mean": 55.1463,
+            "r_channel_mean": 55.7229,
+            "rgb_average": 55.4042,
+            "max_channel_deviation": 0.3187,
+            "is_grayscale": true,
+            "is_color_cast": false,
+            "blue_screen_confidence": 0.0,
+            "green_screen_confidence": 0.0
+          },
+          "process_time_ms": 3.08,
+          "detection_level": "FAST"
+        },
+        {
+          "detector_name": "occlusion",
+          "issue_type": "occlusion_normal",
+          "is_abnormal": false,
+          "score": 0.0012,
+          "threshold": 0.3,
+          "confidence": 0.996,
+          "severity": "normal",
+          "explanation": "画面未检测到明显遮挡",
+          "possible_causes": [],
+          "suggestions": [],
+          "evidence": {
+            "occlusion_score": 0.0012,
+            "edge_density": 0.0816,
+            "global_contrast": 63.6416,
+            "hue_std": 66.6958,
+            "saturation_mean": 7.3446,
+            "brightness_range": 255.0,
+            "very_low_texture_ratio": 0.0425,
+            "very_uniform_ratio": 0.0268,
+            "occlusion_threshold": 0.3,
+            "sub_scores": {
+              "edge_score": 0,
+              "contrast_score": 0,
+              "color_score": 0,
+              "brightness_score": 0,
+              "uniform_score": 0.026785714285714284
+            }
+          },
+          "process_time_ms": 11.88,
+          "detection_level": "FAST"
+        },
+        {
+          "detector_name": "brightness",
+          "issue_type": "brightness_normal",
+          "is_abnormal": false,
+          "score": 55.3785,
+          "threshold": 20.0,
+          "confidence": 0.3291,
+          "severity": "normal",
+          "explanation": "图像平均亮度55.4，亮度正常",
+          "possible_causes": [],
+          "suggestions": [],
+          "evidence": {
+            "mean_brightness": 55.3785,
+            "std_brightness": 63.6416,
+            "percentile_5": 0.0,
+            "percentile_95": 196.0,
+            "brightness_min_threshold": 20.0,
+            "brightness_max_threshold": 235.0
+          },
+          "process_time_ms": 4.5,
+          "detection_level": "FAST"
+        },
+        {
+          "detector_name": "blur",
+          "issue_type": "blur",
+          "is_abnormal": false,
+          "score": 495.0051,
+          "threshold": 100.0,
+          "confidence": 1.0,
+          "severity": "normal",
+          "explanation": "图像清晰度评分495.0，画面清晰度正常",
+          "possible_causes": [],
+          "suggestions": [],
+          "evidence": {
+            "laplacian_variance": 495.0051,
+            "method": "fast"
+          },
+          "process_time_ms": 1.41,
+          "detection_level": "FAST"
+        },
+        {
+          "detector_name": "noise",
+          "issue_type": "noise_normal",
+          "is_abnormal": false,
+          "score": 2.9652,
+          "threshold": 15.0,
+          "confidence": 0.8023,
+          "severity": "normal",
+          "explanation": "噪声水平3.0，在正常范围内",
+          "possible_causes": [],
+          "suggestions": [],
+          "evidence": {
+            "estimation_method": "laplacian_mad",
+            "noise_sigma": 2.9652,
+            "noise_threshold": 15.0
+          },
+          "process_time_ms": 3.19,
+          "detection_level": "FAST"
+        },
+        {
+          "detector_name": "contrast",
+          "issue_type": "contrast_normal",
+          "is_abnormal": false,
+          "score": 63.6416,
+          "threshold": 30.0,
+          "confidence": 1.0,
+          "severity": "normal",
+          "explanation": "图像对比度63.6，对比度正常",
+          "possible_causes": [],
+          "suggestions": [],
+          "evidence": {
+            "std_contrast": 63.6416,
+            "dynamic_range": 255.0,
+            "min_value": 0.0,
+            "max_value": 255.0,
+            "contrast_threshold": 30.0
+          },
+          "process_time_ms": 1.75,
+          "detection_level": "FAST"
+        },
+        {
+          "detector_name": "stripe",
+          "issue_type": "stripe_normal",
+          "is_abnormal": false,
+          "score": 0.0029,
+          "threshold": 0.3,
+          "confidence": 0.9903,
+          "severity": "normal",
+          "explanation": "未检测到明显条纹干扰",
+          "possible_causes": [],
+          "suggestions": [],
+          "evidence": {
+            "horizontal_stripe_energy": 0.0029,
+            "vertical_stripe_energy": 0.0021,
+            "stripe_strength": 0.0029,
+            "stripe_direction": "none",
+            "stripe_threshold": 0.3
+          },
+          "process_time_ms": 9.04,
+          "detection_level": "FAST"
+        }
+      ],
+      "suppressed_issues": [],
+      "independent_issues": [
+        "grayscale"
+      ],
+      "total_process_time_ms": 15.53,
+      "detection_level": "FAST",
+      "config_profile": "normal",
+      "timestamp": "2026-01-07T23:57:58.559898"
+    },
+    {
+      "image_id": "",
+      "image_path": "../e37a6e497db98f029031243332903ec4_r.jpg",
+      "image_size": [
+        1668,
+        951
+      ],
+      "is_abnormal": false,
+      "primary_issue": null,
+      "severity": "normal",
+      "scores": {
+        "signal_loss": 125.3354,
+        "color": 2.3339,
+        "occlusion": 0.0514,
+        "brightness": 125.3354,
+        "blur": 779.3151,
+        "noise": 2.9652,
+        "contrast": 34.0503,
+        "stripe": 0.0005
+      },
+      "detection_results": [
+        {
+          "detector_name": "signal_loss",
+          "issue_type": "signal_normal",
+          "is_abnormal": false,
+          "score": 125.3354,
+          "threshold": 10.0,
+          "confidence": 0.9792,
+          "severity": "normal",
+          "explanation": "信号正常",
+          "possible_causes": [],
+          "suggestions": [],
+          "evidence": {
+            "mean_brightness": 125.3354,
+            "std_brightness": 34.0503,
+            "min_brightness": 0.0,
+            "max_brightness": 255.0,
+            "is_black_screen": false,
+            "is_white_screen": false,
+            "is_solid_color": false,
+            "black_threshold": 10.0
+          },
+          "process_time_ms": 23.2,
+          "detection_level": "FAST"
+        },
+        {
+          "detector_name": "color",
+          "issue_type": "color_normal",
+          "is_abnormal": false,
+          "score": 2.3339,
+          "threshold": 30.0,
+          "confidence": 1.0,
+          "severity": "normal",
+          "explanation": "图像颜色正常",
+          "possible_causes": [],
+          "suggestions": [],
+          "evidence": {
+            "mean_saturation": 19.96,
+            "b_channel_mean": 127.8555,
+            "g_channel_mean": 123.9798,
+            "r_channel_mean": 127.1057,
+            "rgb_average": 126.3136,
+            "max_channel_deviation": 2.3339,
+            "is_grayscale": false,
+            "is_color_cast": false,
+            "blue_screen_confidence": 0.0,
+            "green_screen_confidence": 0.0
+          },
+          "process_time_ms": 35.04,
+          "detection_level": "FAST"
+        },
+        {
+          "detector_name": "occlusion",
+          "issue_type": "occlusion_normal",
+          "is_abnormal": false,
+          "score": 0.0514,
+          "threshold": 0.3,
+          "confidence": 0.8286,
+          "severity": "normal",
+          "explanation": "画面未检测到明显遮挡",
+          "possible_causes": [],
+          "suggestions": [],
+          "evidence": {
+            "occlusion_score": 0.0514,
+            "edge_density": 0.0746,
+            "global_contrast": 34.0503,
+            "hue_std": 46.9962,
+            "saturation_mean": 19.96,
+            "brightness_range": 255.0,
+            "very_low_texture_ratio": 0.2042,
+            "very_uniform_ratio": 0.0948,
+            "occlusion_threshold": 0.3,
+            "sub_scores": {
+              "edge_score": 0,
+              "contrast_score": 0.14874134025648045,
+              "color_score": 0,
+              "brightness_score": 0,
+              "uniform_score": 0.09482758620689655
+            }
+          },
+          "process_time_ms": 198.58,
+          "detection_level": "FAST"
+        },
+        {
+          "detector_name": "brightness",
+          "issue_type": "brightness_normal",
+          "is_abnormal": false,
+          "score": 125.3354,
+          "threshold": 20.0,
+          "confidence": 0.9799,
+          "severity": "normal",
+          "explanation": "图像平均亮度125.3，亮度正常",
+          "possible_causes": [],
+          "suggestions": [],
+          "evidence": {
+            "mean_brightness": 125.3354,
+            "std_brightness": 34.0503,
+            "percentile_5": 60.0,
+            "percentile_95": 173.0,
+            "brightness_min_threshold": 20.0,
+            "brightness_max_threshold": 235.0
+          },
+          "process_time_ms": 66.01,
+          "detection_level": "FAST"
+        },
+        {
+          "detector_name": "blur",
+          "issue_type": "blur",
+          "is_abnormal": false,
+          "score": 779.3151,
+          "threshold": 100.0,
+          "confidence": 1.0,
+          "severity": "normal",
+          "explanation": "图像清晰度评分779.3，画面清晰度正常",
+          "possible_causes": [],
+          "suggestions": [],
+          "evidence": {
+            "laplacian_variance": 779.3151,
+            "method": "fast"
+          },
+          "process_time_ms": 35.03,
+          "detection_level": "FAST"
+        },
+        {
+          "detector_name": "noise",
+          "issue_type": "noise_normal",
+          "is_abnormal": false,
+          "score": 2.9652,
+          "threshold": 15.0,
+          "confidence": 0.8023,
+          "severity": "normal",
+          "explanation": "噪声水平3.0，在正常范围内",
+          "possible_causes": [],
+          "suggestions": [],
+          "evidence": {
+            "estimation_method": "laplacian_mad",
+            "noise_sigma": 2.9652,
+            "noise_threshold": 15.0
+          },
+          "process_time_ms": 46.37,
+          "detection_level": "FAST"
+        },
+        {
+          "detector_name": "contrast",
+          "issue_type": "contrast_normal",
+          "is_abnormal": false,
+          "score": 34.0503,
+          "threshold": 30.0,
+          "confidence": 0.135,
+          "severity": "normal",
+          "explanation": "图像对比度34.1，对比度正常",
+          "possible_causes": [],
+          "suggestions": [],
+          "evidence": {
+            "std_contrast": 34.0503,
+            "dynamic_range": 255.0,
+            "min_value": 0.0,
+            "max_value": 255.0,
+            "contrast_threshold": 30.0
+          },
+          "process_time_ms": 9.6,
+          "detection_level": "FAST"
+        },
+        {
+          "detector_name": "stripe",
+          "issue_type": "stripe_normal",
+          "is_abnormal": false,
+          "score": 0.0005,
+          "threshold": 0.3,
+          "confidence": 0.9985,
+          "severity": "normal",
+          "explanation": "未检测到明显条纹干扰",
+          "possible_causes": [],
+          "suggestions": [],
+          "evidence": {
+            "horizontal_stripe_energy": 0.0005,
+            "vertical_stripe_energy": 0.0003,
+            "stripe_strength": 0.0005,
+            "stripe_direction": "horizontal",
+            "stripe_threshold": 0.3
+          },
+          "process_time_ms": 185.54,
+          "detection_level": "FAST"
+        }
+      ],
+      "suppressed_issues": [],
+      "independent_issues": [],
+      "total_process_time_ms": 261.1,
+      "detection_level": "FAST",
+      "config_profile": "normal",
+      "timestamp": "2026-01-07T23:57:58.831107"
+    }
+  ]
+}

@@ -25,6 +25,7 @@ class StripeDetector(BaseDetector):
     version = "1.0.0"
 
     supported_levels = [
+        DetectionLevel.FAST,
         DetectionLevel.STANDARD,
         DetectionLevel.DEEP,
     ]

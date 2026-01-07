@@ -1,0 +1,1167 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OriginX 图像质量诊断结果</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Noto+Sans+SC:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-primary: #0a0e17;
+            --bg-secondary: #111827;
+            --bg-card: #1a2234;
+            --bg-card-hover: #1f2937;
+            --accent-cyan: #06b6d4;
+            --accent-emerald: #10b981;
+            --accent-amber: #f59e0b;
+            --accent-rose: #f43f5e;
+            --accent-violet: #8b5cf6;
+            --text-primary: #f1f5f9;
+            --text-secondary: #94a3b8;
+            --text-muted: #64748b;
+            --border-color: #2d3748;
+            --glow-cyan: 0 0 20px rgba(6, 182, 212, 0.3);
+            --glow-emerald: 0 0 20px rgba(16, 185, 129, 0.3);
+            --glow-rose: 0 0 20px rgba(244, 63, 94, 0.3);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Noto Sans SC', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            min-height: 100vh;
+            line-height: 1.6;
+        }
+
+        /* 背景网格动画 */
+        .bg-grid {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: 
+                linear-gradient(rgba(6, 182, 212, 0.03) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(6, 182, 212, 0.03) 1px, transparent 1px);
+            background-size: 50px 50px;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .container {
+            position: relative;
+            z-index: 1;
+            max-width: 1600px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        /* 头部样式 */
+        .header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 2rem;
+            padding-bottom: 1.5rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .logo-icon {
+            width: 48px;
+            height: 48px;
+            background: linear-gradient(135deg, var(--accent-cyan), var(--accent-violet));
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: 'JetBrains Mono', monospace;
+            font-weight: 700;
+            font-size: 1.2rem;
+            box-shadow: var(--glow-cyan);
+        }
+
+        .logo-text {
+            font-size: 1.5rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, var(--accent-cyan), var(--accent-emerald));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .logo-subtitle {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            font-weight: 400;
+        }
+
+        .timestamp {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            background: var(--bg-card);
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+            border: 1px solid var(--border-color);
+        }
+
+        /* 主布局 */
+        .main-grid {
+            display: grid;
+            grid-template-columns: 1fr 420px;
+            gap: 2rem;
+        }
+
+        @media (max-width: 1200px) {
+            .main-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* 图片展示区 */
+        .image-section {
+            background: var(--bg-card);
+            border-radius: 16px;
+            padding: 1.5rem;
+            border: 1px solid var(--border-color);
+        }
+
+        .section-title {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            font-size: 1rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 1rem;
+        }
+
+        .section-icon {
+            width: 24px;
+            height: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .image-container {
+            position: relative;
+            border-radius: 12px;
+            overflow: hidden;
+            background: var(--bg-primary);
+        }
+
+        .image-container img {
+            width: 100%;
+            height: auto;
+            display: block;
+        }
+
+        .image-overlay {
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .image-badge {
+            padding: 0.35rem 0.75rem;
+            border-radius: 6px;
+            font-size: 0.75rem;
+            font-weight: 500;
+            font-family: 'JetBrains Mono', monospace;
+            backdrop-filter: blur(8px);
+        }
+
+        .badge-size {
+            background: rgba(10, 14, 23, 0.8);
+            color: var(--text-secondary);
+            border: 1px solid var(--border-color);
+        }
+
+        .image-info {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 1rem;
+            padding-top: 1rem;
+            border-top: 1px solid var(--border-color);
+        }
+
+        .image-path {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            max-width: 70%;
+        }
+
+        .process-time {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.8rem;
+            color: var(--accent-cyan);
+        }
+
+        /* 右侧面板 */
+        .side-panel {
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+        }
+
+        /* 状态卡片 */
+        .status-card {
+            background: var(--bg-card);
+            border-radius: 16px;
+            padding: 1.5rem;
+            border: 1px solid var(--border-color);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .status-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+        }
+
+        .status-card.abnormal::before {
+            background: linear-gradient(90deg, var(--accent-amber), var(--accent-rose));
+        }
+
+        .status-card.normal::before {
+            background: linear-gradient(90deg, var(--accent-emerald), var(--accent-cyan));
+        }
+
+        .status-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 1.25rem;
+        }
+
+        .status-indicator {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .status-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            animation: pulse 2s infinite;
+        }
+
+        .status-dot.abnormal {
+            background: var(--accent-amber);
+            box-shadow: 0 0 10px var(--accent-amber);
+        }
+
+        .status-dot.normal {
+            background: var(--accent-emerald);
+            box-shadow: 0 0 10px var(--accent-emerald);
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        .status-text {
+            font-size: 1.1rem;
+            font-weight: 600;
+        }
+
+        .severity-badge {
+            padding: 0.35rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 500;
+            text-transform: uppercase;
+        }
+
+        .severity-info {
+            background: rgba(245, 158, 11, 0.15);
+            color: var(--accent-amber);
+            border: 1px solid rgba(245, 158, 11, 0.3);
+        }
+
+        .severity-warning {
+            background: rgba(244, 63, 94, 0.15);
+            color: var(--accent-rose);
+            border: 1px solid rgba(244, 63, 94, 0.3);
+        }
+
+        .severity-normal {
+            background: rgba(16, 185, 129, 0.15);
+            color: var(--accent-emerald);
+            border: 1px solid rgba(16, 185, 129, 0.3);
+        }
+
+        .primary-issue {
+            background: var(--bg-secondary);
+            border-radius: 10px;
+            padding: 1rem;
+            margin-top: 0.5rem;
+        }
+
+        .issue-label {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            margin-bottom: 0.35rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .issue-value {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: var(--accent-amber);
+        }
+
+        /* 检测指标概览 */
+        .metrics-overview {
+            background: var(--bg-card);
+            border-radius: 16px;
+            padding: 1.5rem;
+            border: 1px solid var(--border-color);
+        }
+
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 0.75rem;
+            margin-top: 1rem;
+        }
+
+        .metric-item {
+            background: var(--bg-secondary);
+            border-radius: 10px;
+            padding: 0.875rem;
+            transition: all 0.2s ease;
+            cursor: pointer;
+            border: 1px solid transparent;
+        }
+
+        .metric-item:hover {
+            background: var(--bg-card-hover);
+            border-color: var(--border-color);
+            transform: translateY(-2px);
+        }
+
+        .metric-item.abnormal {
+            border-color: rgba(245, 158, 11, 0.3);
+        }
+
+        .metric-name {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            margin-bottom: 0.35rem;
+        }
+
+        .metric-value {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 1.1rem;
+            font-weight: 600;
+        }
+
+        .metric-value.normal {
+            color: var(--accent-emerald);
+        }
+
+        .metric-value.abnormal {
+            color: var(--accent-amber);
+        }
+
+        /* 详细检测结果 */
+        .detail-section {
+            background: var(--bg-card);
+            border-radius: 16px;
+            padding: 1.5rem;
+            border: 1px solid var(--border-color);
+            grid-column: 1 / -1;
+            margin-top: 1rem;
+        }
+
+        .detail-list {
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+            margin-top: 1rem;
+        }
+
+        .detail-item {
+            background: var(--bg-secondary);
+            border-radius: 12px;
+            padding: 1.25rem;
+            border: 1px solid var(--border-color);
+            transition: all 0.2s ease;
+        }
+
+        .detail-item:hover {
+            border-color: var(--accent-cyan);
+            background: var(--bg-card-hover);
+        }
+
+        .detail-item.abnormal {
+            border-left: 3px solid var(--accent-amber);
+        }
+
+        .detail-item.normal {
+            border-left: 3px solid var(--accent-emerald);
+        }
+
+        .detail-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 0.75rem;
+        }
+
+        .detail-name {
+            font-weight: 600;
+            font-size: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .detail-name .icon {
+            font-size: 1.1rem;
+        }
+
+        .issue-type-badge {
+            font-size: 0.7rem;
+            padding: 0.2rem 0.5rem;
+            border-radius: 4px;
+            margin-left: 0.5rem;
+            font-weight: 500;
+        }
+
+        .issue-type-badge.normal {
+            background: rgba(16, 185, 129, 0.15);
+            color: var(--accent-emerald);
+        }
+
+        .issue-type-badge.abnormal {
+            background: rgba(244, 63, 94, 0.15);
+            color: var(--accent-rose);
+        }
+
+        .detail-badges {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .detail-badge {
+            padding: 0.25rem 0.5rem;
+            border-radius: 4px;
+            font-size: 0.7rem;
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        .badge-score {
+            background: rgba(139, 92, 246, 0.15);
+            color: var(--accent-violet);
+        }
+
+        .badge-confidence {
+            background: rgba(6, 182, 212, 0.15);
+            color: var(--accent-cyan);
+        }
+
+        .badge-time {
+            background: rgba(100, 116, 139, 0.2);
+            color: var(--text-muted);
+        }
+
+        .detail-explanation {
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+            margin-bottom: 0.75rem;
+            padding: 0.75rem;
+            background: var(--bg-primary);
+            border-radius: 8px;
+        }
+
+        /* 判断标准区域 */
+        .criteria-section {
+            background: var(--bg-primary);
+            border-radius: 8px;
+            padding: 1rem;
+            margin-top: 0.75rem;
+        }
+
+        .criteria-header {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            margin-bottom: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .criteria-bar {
+            position: relative;
+            height: 32px;
+            background: linear-gradient(90deg, 
+                rgba(16, 185, 129, 0.2) 0%, 
+                rgba(16, 185, 129, 0.2) var(--threshold-pos, 50%), 
+                rgba(244, 63, 94, 0.2) var(--threshold-pos, 50%), 
+                rgba(244, 63, 94, 0.2) 100%);
+            border-radius: 6px;
+            overflow: visible;
+            margin-bottom: 0.5rem;
+        }
+
+        .criteria-bar.inverted {
+            background: linear-gradient(90deg, 
+                rgba(244, 63, 94, 0.2) 0%, 
+                rgba(244, 63, 94, 0.2) var(--threshold-pos, 50%), 
+                rgba(16, 185, 129, 0.2) var(--threshold-pos, 50%), 
+                rgba(16, 185, 129, 0.2) 100%);
+        }
+
+        .threshold-line {
+            position: absolute;
+            top: -4px;
+            bottom: -4px;
+            width: 2px;
+            background: var(--text-muted);
+            left: var(--threshold-pos, 50%);
+            transform: translateX(-50%);
+        }
+
+        .threshold-label {
+            position: absolute;
+            top: -20px;
+            left: var(--threshold-pos, 50%);
+            transform: translateX(-50%);
+            font-size: 0.65rem;
+            color: var(--text-muted);
+            white-space: nowrap;
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        .score-marker {
+            position: absolute;
+            top: 50%;
+            transform: translate(-50%, -50%);
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.6rem;
+            font-weight: 600;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+        }
+
+        .score-marker.normal {
+            background: var(--accent-emerald);
+            color: white;
+        }
+
+        .score-marker.abnormal {
+            background: var(--accent-rose);
+            color: white;
+        }
+
+        .criteria-legend {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.7rem;
+            color: var(--text-muted);
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        .criteria-rule {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin-top: 0.5rem;
+            padding: 0.5rem 0.75rem;
+            background: rgba(139, 92, 246, 0.1);
+            border-radius: 6px;
+            border-left: 2px solid var(--accent-violet);
+        }
+
+        .criteria-rule-icon {
+            font-size: 0.9rem;
+        }
+
+        .criteria-rule-text {
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+        }
+
+        .detail-progress {
+            margin-top: 0.75rem;
+        }
+
+        .progress-bar {
+            height: 4px;
+            background: var(--bg-primary);
+            border-radius: 2px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            border-radius: 2px;
+            transition: width 0.5s ease;
+        }
+
+        .progress-fill.normal {
+            background: linear-gradient(90deg, var(--accent-emerald), var(--accent-cyan));
+        }
+
+        .progress-fill.abnormal {
+            background: linear-gradient(90deg, var(--accent-amber), var(--accent-rose));
+        }
+
+        .detail-suggestions {
+            margin-top: 1rem;
+            padding-top: 1rem;
+            border-top: 1px dashed var(--border-color);
+        }
+
+        .suggestions-title {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            margin-bottom: 0.5rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .suggestion-list {
+            list-style: none;
+        }
+
+        .suggestion-list li {
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+            padding: 0.35rem 0;
+            padding-left: 1.25rem;
+            position: relative;
+        }
+
+        .suggestion-list li::before {
+            content: '→';
+            position: absolute;
+            left: 0;
+            color: var(--accent-cyan);
+        }
+
+        /* 加载动画 */
+        .loading {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 400px;
+            gap: 1.5rem;
+        }
+
+        .loading-spinner {
+            width: 48px;
+            height: 48px;
+            border: 3px solid var(--border-color);
+            border-top-color: var(--accent-cyan);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .loading-text {
+            color: var(--text-muted);
+            font-size: 0.9rem;
+        }
+
+        /* 错误状态 */
+        .error-state {
+            text-align: center;
+            padding: 3rem;
+            color: var(--text-muted);
+        }
+
+        .error-icon {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+        }
+
+        /* 动画入场 */
+        .fade-in {
+            animation: fadeIn 0.5s ease forwards;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .stagger-1 { animation-delay: 0.1s; }
+        .stagger-2 { animation-delay: 0.2s; }
+        .stagger-3 { animation-delay: 0.3s; }
+        .stagger-4 { animation-delay: 0.4s; }
+
+        /* 底部信息 */
+        .footer {
+            margin-top: 2rem;
+            padding-top: 1.5rem;
+            border-top: 1px solid var(--border-color);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            color: var(--text-muted);
+            font-size: 0.8rem;
+        }
+
+        .footer a {
+            color: var(--accent-cyan);
+            text-decoration: none;
+        }
+
+        .footer a:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+    <div class="bg-grid"></div>
+    
+    <div class="container">
+        <header class="header fade-in">
+            <div class="logo">
+                <div class="logo-icon">OX</div>
+                <div>
+                    <div class="logo-text">OriginX</div>
+                    <div class="logo-subtitle">图像质量诊断系统</div>
+                </div>
+            </div>
+            <div class="timestamp" id="timestamp">--</div>
+        </header>
+
+        <div id="content">
+            <div class="loading">
+                <div class="loading-spinner"></div>
+                <div class="loading-text">正在加载诊断结果...</div>
+            </div>
+        </div>
+
+        <footer class="footer fade-in stagger-4">
+            <div>OriginX v1.0.0 | 单机版图像质量诊断系统</div>
+            <div>配置模板: <span id="profile">--</span></div>
+        </footer>
+    </div>
+
+    <script>
+        // 检测器名称映射及判断标准说明
+        const DETECTOR_NAMES = {
+            'signal_loss': { 
+                name: '信号检测', 
+                icon: '📡',
+                criteria: '平均亮度 > 阈值 为正常',
+                unit: '亮度值',
+                higherIsBetter: true
+            },
+            'color': { 
+                name: '颜色检测', 
+                icon: '🎨',
+                criteria: '色偏程度 < 阈值 为正常',
+                unit: '色偏度',
+                higherIsBetter: false
+            },
+            'occlusion': { 
+                name: '遮挡检测', 
+                icon: '🚫',
+                criteria: '遮挡评分 < 阈值 为正常',
+                unit: '遮挡率',
+                higherIsBetter: false
+            },
+            'brightness': { 
+                name: '亮度检测', 
+                icon: '☀️',
+                criteria: '亮度在合理范围内为正常 (20~235)',
+                unit: '亮度值',
+                higherIsBetter: null  // 区间判断
+            },
+            'blur': { 
+                name: '清晰度检测', 
+                icon: '🔍',
+                criteria: '清晰度评分 > 阈值 为正常',
+                unit: '清晰度',
+                higherIsBetter: true
+            },
+            'noise': { 
+                name: '噪声检测', 
+                icon: '📊',
+                criteria: '噪声水平 < 阈值 为正常',
+                unit: '噪声值',
+                higherIsBetter: false
+            },
+            'contrast': { 
+                name: '对比度检测', 
+                icon: '◐',
+                criteria: '对比度 > 阈值 为正常',
+                unit: '对比度',
+                higherIsBetter: true
+            },
+            'stripe': { 
+                name: '条纹检测', 
+                icon: '▤',
+                criteria: '条纹强度 < 阈值 为正常',
+                unit: '条纹值',
+                higherIsBetter: false
+            }
+        };
+
+        // 严重程度映射
+        const SEVERITY_MAP = {
+            'normal': { text: '正常', class: 'severity-normal' },
+            'info': { text: '提示', class: 'severity-info' },
+            'warning': { text: '警告', class: 'severity-warning' },
+            'error': { text: '错误', class: 'severity-warning' },
+            'critical': { text: '严重', class: 'severity-warning' }
+        };
+
+        // 问题类型中文映射
+        const ISSUE_TYPE_MAP = {
+            // 信号检测
+            'signal_loss': '信号丢失',
+            'signal_normal': '信号正常',
+            'black_screen': '黑屏',
+            'white_screen': '白屏',
+            // 颜色检测
+            'color': '颜色异常',
+            'color_normal': '颜色正常',
+            'color_cast': '色偏',
+            'grayscale': '黑白画面',
+            'blue_screen': '蓝屏',
+            'green_screen': '绿屏',
+            // 遮挡检测
+            'occlusion': '画面遮挡',
+            'occlusion_normal': '无遮挡',
+            // 亮度检测
+            'brightness': '亮度异常',
+            'brightness_normal': '亮度正常',
+            'overexposure': '过曝',
+            'underexposure': '欠曝',
+            'too_bright': '过亮',
+            'too_dark': '过暗',
+            // 模糊检测
+            'blur': '画面模糊',
+            'blur_normal': '画面清晰',
+            'motion_blur': '运动模糊',
+            'defocus': '失焦',
+            // 噪声检测
+            'noise': '噪声干扰',
+            'noise_normal': '噪声正常',
+            'gaussian_noise': '高斯噪声',
+            'salt_pepper_noise': '椒盐噪声',
+            'snow': '雪花噪声',
+            // 对比度检测
+            'contrast': '对比度异常',
+            'contrast_normal': '对比度正常',
+            'low_contrast': '低对比度',
+            'high_contrast': '高对比度',
+            // 条纹检测
+            'stripe': '条纹干扰',
+            'stripe_normal': '无条纹',
+            'horizontal_stripe': '水平条纹',
+            'vertical_stripe': '垂直条纹',
+            'color_stripe': '彩色条纹',
+            // 其他
+            'freeze': '画面冻结',
+            'flicker': '画面闪烁',
+            'shake': '画面抖动',
+            'scene_change': '场景变化',
+            'rolling': '滚屏'
+        };
+
+        // 获取问题类型的中文名称
+        function getIssueTypeName(issueType) {
+            return ISSUE_TYPE_MAP[issueType] || issueType;
+        }
+
+        // 获取检测器的中文名称
+        function getDetectorName(detectorName) {
+            return DETECTOR_NAMES[detectorName]?.name || detectorName;
+        }
+
+        // 加载结果数据
+        async function loadResult() {
+            try {
+                const response = await fetch('result.json');
+                if (!response.ok) throw new Error('无法加载 result.json');
+                const data = await response.json();
+                renderResult(data);
+            } catch (error) {
+                document.getElementById('content').innerHTML = `
+                    <div class="error-state">
+                        <div class="error-icon">⚠️</div>
+                        <h3>加载失败</h3>
+                        <p>${error.message}</p>
+                        <p style="margin-top: 1rem; font-size: 0.85rem;">请确保 result.json 文件存在于同目录下</p>
+                    </div>
+                `;
+            }
+        }
+
+        // 渲染结果
+        function renderResult(data) {
+            // 更新时间戳
+            const timestamp = new Date(data.timestamp);
+            document.getElementById('timestamp').textContent = timestamp.toLocaleString('zh-CN');
+            document.getElementById('profile').textContent = data.config_profile || 'default';
+
+            // 获取图片文件名
+            const imagePath = data.image_path;
+            const imageFile = imagePath.split('/').pop();
+
+            const isAbnormal = data.is_abnormal;
+            const severityInfo = SEVERITY_MAP[data.severity] || SEVERITY_MAP.normal;
+
+            const html = `
+                <div class="main-grid">
+                    <div class="image-section fade-in stagger-1">
+                        <div class="section-title">
+                            <div class="section-icon">🖼️</div>
+                            原始图像
+                        </div>
+                        <div class="image-container">
+                            <img src="${imageFile}" alt="诊断图像" onerror="this.src='data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 width=%22400%22 height=%22300%22><rect fill=%22%231a2234%22 width=%22400%22 height=%22300%22/><text fill=%22%2364748b%22 x=%22200%22 y=%22150%22 text-anchor=%22middle%22>图片加载失败</text></svg>'">
+                            <div class="image-overlay">
+                                <span class="image-badge badge-size">${data.image_size[0]} × ${data.image_size[1]}</span>
+                            </div>
+                        </div>
+                        <div class="image-info">
+                            <div class="image-path" title="${imagePath}">${imagePath}</div>
+                            <div class="process-time">⏱️ ${data.total_process_time_ms.toFixed(2)}ms</div>
+                        </div>
+                    </div>
+
+                    <div class="side-panel">
+                        <div class="status-card ${isAbnormal ? 'abnormal' : 'normal'} fade-in stagger-2">
+                            <div class="status-header">
+                                <div class="status-indicator">
+                                    <div class="status-dot ${isAbnormal ? 'abnormal' : 'normal'}"></div>
+                                    <span class="status-text">${isAbnormal ? '检测到异常' : '图像正常'}</span>
+                                </div>
+                                <span class="severity-badge ${severityInfo.class}">${severityInfo.text}</span>
+                            </div>
+                            ${isAbnormal && data.primary_issue ? `
+                                <div class="primary-issue">
+                                    <div class="issue-label">主要问题</div>
+                                    <div class="issue-value">${getIssueTypeName(data.primary_issue)}</div>
+                                </div>
+                            ` : ''}
+                        </div>
+
+                        <div class="metrics-overview fade-in stagger-3">
+                            <div class="section-title">
+                                <div class="section-icon">📈</div>
+                                检测指标概览
+                            </div>
+                            <div class="metrics-grid">
+                                ${Object.entries(data.scores).map(([key, value]) => {
+                                    const detector = DETECTOR_NAMES[key] || { name: key, icon: '📊' };
+                                    const result = data.detection_results.find(r => r.detector_name === key);
+                                    const isAbn = result?.is_abnormal || false;
+                                    return `
+                                        <div class="metric-item ${isAbn ? 'abnormal' : ''}" onclick="scrollToDetail('${key}')">
+                                            <div class="metric-name">${detector.icon} ${detector.name}</div>
+                                            <div class="metric-value ${isAbn ? 'abnormal' : 'normal'}">${value.toFixed(2)}</div>
+                                        </div>
+                                    `;
+                                }).join('')}
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="detail-section fade-in stagger-4">
+                        <div class="section-title">
+                            <div class="section-icon">📋</div>
+                            详细检测结果
+                        </div>
+                        <div class="detail-list">
+                            ${data.detection_results.map((result, index) => {
+                                const detector = DETECTOR_NAMES[result.detector_name] || { 
+                                    name: result.detector_name, 
+                                    icon: '📊',
+                                    criteria: '得分与阈值比较',
+                                    unit: '得分',
+                                    higherIsBetter: true
+                                };
+                                const severity = SEVERITY_MAP[result.severity] || SEVERITY_MAP.normal;
+                                const confidence = (result.confidence * 100).toFixed(1);
+                                const criteriaViz = renderCriteriaVisualization(result, detector);
+                                
+                                const issueTypeName = getIssueTypeName(result.issue_type);
+                                
+                                return '<div class="detail-item ' + (result.is_abnormal ? 'abnormal' : 'normal') + '" ' +
+                                       'id="detail-' + result.detector_name + '" ' +
+                                       'style="animation-delay: ' + (0.1 * (index + 1)) + 's">' +
+                                    '<div class="detail-header">' +
+                                        '<div class="detail-name">' +
+                                            '<span class="icon">' + detector.icon + '</span>' +
+                                            detector.name +
+                                            '<span class="issue-type-badge ' + (result.is_abnormal ? 'abnormal' : 'normal') + '">' + issueTypeName + '</span>' +
+                                        '</div>' +
+                                        '<div class="detail-badges">' +
+                                            '<span class="detail-badge badge-score">得分: ' + result.score.toFixed(2) + '</span>' +
+                                            '<span class="detail-badge badge-confidence">置信度: ' + confidence + '%</span>' +
+                                            '<span class="detail-badge badge-time">' + result.process_time_ms.toFixed(1) + 'ms</span>' +
+                                        '</div>' +
+                                    '</div>' +
+                                    '<div class="detail-explanation">' + result.explanation + '</div>' +
+                                    criteriaViz +
+                                    (result.suggestions && result.suggestions.length > 0 ? 
+                                        '<div class="detail-suggestions">' +
+                                            '<div class="suggestions-title">改进建议</div>' +
+                                            '<ul class="suggestion-list">' +
+                                                result.suggestions.map(s => '<li>' + s + '</li>').join('') +
+                                            '</ul>' +
+                                        '</div>' 
+                                    : '') +
+                                '</div>';
+                            }).join('')}
+                        </div>
+                    </div>
+                </div>
+            `;
+
+            document.getElementById('content').innerHTML = html;
+        }
+
+        // 渲染判断标准可视化
+        function renderCriteriaVisualization(result, detector) {
+            const score = result.score;
+            const threshold = result.threshold;
+            const isAbnormal = result.is_abnormal;
+            const higherIsBetter = detector.higherIsBetter;
+            
+            // 计算显示范围
+            let minVal, maxVal, displayScore, displayThreshold;
+            
+            // 根据不同指标类型设置合理的显示范围
+            if (result.detector_name === 'blur') {
+                minVal = 0;
+                maxVal = Math.max(1000, score * 1.2);
+            } else if (result.detector_name === 'brightness' || result.detector_name === 'signal_loss') {
+                minVal = 0;
+                maxVal = 255;
+            } else if (result.detector_name === 'occlusion' || result.detector_name === 'stripe') {
+                minVal = 0;
+                maxVal = 1;
+            } else if (result.detector_name === 'contrast') {
+                minVal = 0;
+                maxVal = Math.max(100, score * 1.5);
+            } else if (result.detector_name === 'noise') {
+                minVal = 0;
+                maxVal = Math.max(50, threshold * 2);
+            } else if (result.detector_name === 'color') {
+                minVal = 0;
+                maxVal = Math.max(100, threshold * 2);
+            } else {
+                minVal = 0;
+                maxVal = Math.max(threshold * 3, score * 1.5);
+            }
+            
+            // 计算位置百分比
+            const range = maxVal - minVal;
+            const thresholdPos = ((threshold - minVal) / range) * 100;
+            const scorePos = Math.min(Math.max(((score - minVal) / range) * 100, 2), 98);
+            
+            // 判断条带是否需要反转（分数越低越好的情况）
+            const isInverted = higherIsBetter === false;
+            
+            // 生成判断规则说明
+            let ruleText = detector.criteria;
+            let comparison = '';
+            if (higherIsBetter === true) {
+                comparison = score >= threshold ? '✓ 达标' : '✗ 未达标';
+            } else if (higherIsBetter === false) {
+                comparison = score <= threshold ? '✓ 达标' : '✗ 超标';
+            } else {
+                // 亮度等区间判断
+                comparison = !isAbnormal ? '✓ 在正常范围' : '✗ 超出范围';
+            }
+            
+            return `
+                <div class="criteria-section">
+                    <div class="criteria-header">
+                        <span>📏</span>
+                        <span>判断标准</span>
+                    </div>
+                    <div class="criteria-bar ${isInverted ? 'inverted' : ''}" style="--threshold-pos: ${thresholdPos}%">
+                        <div class="threshold-line" style="--threshold-pos: ${thresholdPos}%"></div>
+                        <div class="threshold-label" style="--threshold-pos: ${thresholdPos}%">阈值: ${threshold}</div>
+                        <div class="score-marker ${isAbnormal ? 'abnormal' : 'normal'}" style="left: ${scorePos}%">
+                            ${isAbnormal ? '✗' : '✓'}
+                        </div>
+                    </div>
+                    <div class="criteria-legend">
+                        <span>${minVal.toFixed(1)}</span>
+                        <span>当前得分: ${score.toFixed(2)} ${comparison}</span>
+                        <span>${maxVal.toFixed(1)}</span>
+                    </div>
+                    <div class="criteria-rule">
+                        <span class="criteria-rule-icon">📐</span>
+                        <span class="criteria-rule-text">${ruleText}</span>
+                    </div>
+                </div>
+            `;
+        }
+
+        // 滚动到详情
+        function scrollToDetail(detectorName) {
+            const element = document.getElementById(`detail-${detectorName}`);
+            if (element) {
+                element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                element.style.boxShadow = '0 0 20px rgba(6, 182, 212, 0.3)';
+                setTimeout(() => {
+                    element.style.boxShadow = '';
+                }, 1500);
+            }
+        }
+
+        // 页面加载
+        document.addEventListener('DOMContentLoaded', loadResult);
+    </script>
+</body>
+</html>
+

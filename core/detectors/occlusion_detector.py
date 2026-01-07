@@ -16,17 +16,23 @@ class OcclusionDetector(BaseDetector):
     遮挡检测器
 
     检测图像是否被遮挡，包括：
-    - 镜头被遮挡
-    - 大面积单色区域
-    - 异常纹理区域
+    - 镜头被遮挡（全黑/全白/单色覆盖）
+    - 镜头脏污模糊
+    - 物理遮挡
+
+    优化说明：
+    - 区分"正常场景的低纹理区域"（如道路）和"真正的遮挡"
+    - 真正的遮挡通常表现为：极低的颜色多样性 + 极低的边缘密度 + 极低的对比度
+    - 正常监控场景即使有大面积道路，仍会有清晰的边缘和颜色变化
     """
 
     name = "occlusion"
     display_name = "画面遮挡检测"
     description = "检测画面是否被遮挡，如镜头被挡住"
-    version = "1.0.0"
+    version = "1.1.0"
 
     supported_levels = [
+        DetectionLevel.FAST,
         DetectionLevel.STANDARD,
         DetectionLevel.DEEP,
     ]
@@ -34,7 +40,7 @@ class OcclusionDetector(BaseDetector):
     priority = 25  # 较高优先级
     suppresses = ["partial_blur", "blur"]
 
-    DEFAULT_THRESHOLD = 0.3  # 遮挡面积比例阈值
+    DEFAULT_THRESHOLD = 0.6  # 提高阈值，减少误报
 
     def __init__(self, config: Dict[str, Any] = None):
         super().__init__(config)
@@ -55,8 +61,29 @@ class OcclusionDetector(BaseDetector):
         gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
         h, w = gray.shape
 
-        # 方法1：低纹理区域检测
-        # 计算局部标准差
+        # ========== 特征提取 ==========
+
+        # 1. 边缘密度分析 - 真正被遮挡的图像几乎没有边缘
+        edges = cv2.Canny(gray, 50, 150)
+        edge_density = float(np.sum(edges > 0)) / (h * w)
+        # 正常场景边缘密度通常 > 0.02，遮挡场景 < 0.01
+
+        # 2. 全局对比度 - 真正被遮挡的图像对比度极低
+        global_contrast = float(gray.std())
+        # 正常场景对比度通常 > 30，遮挡场景 < 10
+
+        # 3. 颜色多样性分析 - 真正被遮挡的图像颜色单一
+        hsv = cv2.cvtColor(image, cv2.COLOR_BGR2HSV)
+        hue_std = float(hsv[:, :, 0].std())  # 色调标准差
+        saturation_mean = float(hsv[:, :, 1].mean())  # 平均饱和度
+        # 正常场景色调std > 20，遮挡场景 < 5
+
+        # 4. 亮度分布分析 - 真正被遮挡的图像亮度分布极窄
+        brightness_range = float(gray.max() - gray.min())
+        brightness_std = float(gray.std())
+        # 正常场景亮度范围 > 100，遮挡场景 < 30
+
+        # 5. 局部纹理复杂度（仅用于极端情况判断）
         kernel_size = 31
         local_mean = cv2.blur(gray.astype(float), (kernel_size, kernel_size))
         local_sq_mean = cv2.blur(
@@ -65,42 +92,66 @@ class OcclusionDetector(BaseDetector):
         local_var = local_sq_mean - local_mean ** 2
         local_std = np.sqrt(np.maximum(local_var, 0))
 
-        # 低纹理区域（可能被遮挡）
-        low_texture_mask = local_std < 5
-        low_texture_ratio = float(np.sum(low_texture_mask)) / (h * w)
+        # 极低纹理区域比例（阈值更严格）
+        very_low_texture_mask = local_std < 2  # 更严格的阈值
+        very_low_texture_ratio = float(np.sum(very_low_texture_mask)) / (h * w)
 
-        # 方法2：边缘密度分析
-        edges = cv2.Canny(gray, 50, 150)
-        edge_density = float(np.sum(edges > 0)) / (h * w)
-
-        # 方法3：颜色单一性分析
-        hsv = cv2.cvtColor(image, cv2.COLOR_BGR2HSV)
-        color_std = float(hsv[:, :, 0].std())  # 色调标准差
-
-        # 方法4：区域分析（分块检测）
-        block_size = 8
+        # 6. 分块均匀性（更严格的标准）
+        block_size = 32  # 更大的块
         blocks_h = h // block_size
         blocks_w = w // block_size
 
-        uniform_blocks = 0
+        very_uniform_blocks = 0
         for i in range(blocks_h):
             for j in range(blocks_w):
                 block = gray[
                     i * block_size : (i + 1) * block_size,
                     j * block_size : (j + 1) * block_size,
                 ]
-                if block.std() < 3:
-                    uniform_blocks += 1
+                # 更严格的均匀性判断
+                if block.std() < 2 and (block.max() - block.min()) < 10:
+                    very_uniform_blocks += 1
 
-        uniform_ratio = uniform_blocks / (blocks_h * blocks_w)
+        very_uniform_ratio = very_uniform_blocks / max(blocks_h * blocks_w, 1)
 
-        # 综合判断遮挡程度
-        occlusion_score = (
-            low_texture_ratio * 0.4
-            + (1 - edge_density * 10) * 0.3  # 边缘少说明可能遮挡
-            + uniform_ratio * 0.3
-        )
+        # ========== 综合判断 ==========
+
+        # 判断是否是真正的遮挡，需要多个强特征同时满足
+        occlusion_indicators = []
+
+        # 指标1: 边缘极度稀疏（权重0.25）
+        edge_score = max(0, 1 - edge_density * 50)  # 边缘密度 < 0.02 才开始计分
+        occlusion_indicators.append(edge_score * 0.25)
+
+        # 指标2: 对比度极低（权重0.25）
+        contrast_score = max(0, 1 - global_contrast / 40)  # 对比度 < 40 才开始计分
+        occlusion_indicators.append(contrast_score * 0.25)
+
+        # 指标3: 颜色极度单一（权重0.2）
+        color_score = max(0, 1 - hue_std / 30)  # 色调std < 30 才开始计分
+        occlusion_indicators.append(color_score * 0.2)
+
+        # 指标4: 亮度范围极窄（权重0.15）
+        brightness_score = max(0, 1 - brightness_range / 100)  # 亮度范围 < 100 才开始计分
+        occlusion_indicators.append(brightness_score * 0.15)
+
+        # 指标5: 大面积极度均匀区域（权重0.15）
+        uniform_score = very_uniform_ratio  # 直接使用比例
+        occlusion_indicators.append(uniform_score * 0.15)
+
+        # 综合得分
+        occlusion_score = sum(occlusion_indicators)
         occlusion_score = max(0, min(1, occlusion_score))
+
+        # 额外检查：如果图像有足够的边缘和对比度，即使有低纹理区域也不是遮挡
+        if edge_density > 0.03 and global_contrast > 35:
+            # 有清晰的场景结构，大幅降低遮挡评分
+            occlusion_score *= 0.3
+
+        # 额外检查：如果颜色多样性足够，不太可能是遮挡
+        if hue_std > 25 and saturation_mean > 20:
+            # 有丰富的颜色，不太可能是遮挡
+            occlusion_score *= 0.5
 
         # 判断是否异常
         is_abnormal = occlusion_score > self.occlusion_threshold
@@ -122,16 +173,26 @@ class OcclusionDetector(BaseDetector):
 
         evidence = {
             "occlusion_score": occlusion_score,
-            "low_texture_ratio": low_texture_ratio,
             "edge_density": edge_density,
-            "color_std": color_std,
-            "uniform_block_ratio": uniform_ratio,
+            "global_contrast": global_contrast,
+            "hue_std": hue_std,
+            "saturation_mean": saturation_mean,
+            "brightness_range": brightness_range,
+            "very_low_texture_ratio": very_low_texture_ratio,
+            "very_uniform_ratio": very_uniform_ratio,
             "occlusion_threshold": self.occlusion_threshold,
+            "sub_scores": {
+                "edge_score": edge_score,
+                "contrast_score": contrast_score,
+                "color_score": color_score,
+                "brightness_score": brightness_score,
+                "uniform_score": uniform_score,
+            },
         }
 
         if level == DetectionLevel.DEEP:
             # 深度分析：定位遮挡区域
-            occlusion_map = self._create_occlusion_map(gray, local_std)
+            occlusion_map = self._create_occlusion_map(gray)
             evidence["has_occlusion_map"] = True
 
             # 计算遮挡区域位置
@@ -159,10 +220,17 @@ class OcclusionDetector(BaseDetector):
 
         return result
 
-    def _create_occlusion_map(
-        self, gray: np.ndarray, local_std: np.ndarray
-    ) -> np.ndarray:
+    def _create_occlusion_map(self, gray: np.ndarray) -> np.ndarray:
         """创建遮挡热力图"""
+        # 计算局部标准差
+        kernel_size = 31
+        local_mean = cv2.blur(gray.astype(float), (kernel_size, kernel_size))
+        local_sq_mean = cv2.blur(
+            (gray.astype(float) ** 2), (kernel_size, kernel_size)
+        )
+        local_var = local_sq_mean - local_mean ** 2
+        local_std = np.sqrt(np.maximum(local_var, 0))
+
         # 标准化
         occlusion_map = 1 - (local_std / max(local_std.max(), 1))
         occlusion_map = (occlusion_map * 255).astype(np.uint8)
@@ -206,9 +274,9 @@ class OcclusionDetector(BaseDetector):
     def _calculate_severity(self, score: float) -> Severity:
         if score <= self.occlusion_threshold:
             return Severity.NORMAL
-        elif score <= 0.5:
-            return Severity.INFO
         elif score <= 0.7:
+            return Severity.INFO
+        elif score <= 0.85:
             return Severity.WARNING
         else:
             return Severity.CRITICAL
