@@ -3,7 +3,7 @@
 import click
 from rich.console import Console
 
-from .commands import detect, serve, config, benchmark
+from .commands import detect, serve, config, benchmark, video, task, report
 
 console = Console()
 
@@ -24,6 +24,9 @@ cli.add_command(detect.detect)
 cli.add_command(serve.serve)
 cli.add_command(config.config)
 cli.add_command(benchmark.benchmark)
+cli.add_command(video.video_group)
+cli.add_command(task.task_group)
+cli.add_command(report.report_group)
 
 
 @cli.command()

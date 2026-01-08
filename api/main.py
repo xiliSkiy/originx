@@ -7,7 +7,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from config import AppConfig, get_config, set_config
-from .routes import diagnose, config as config_routes, detectors, system
+from .routes import diagnose, config as config_routes, detectors, system, video, tasks
 
 
 @asynccontextmanager
@@ -84,6 +84,16 @@ def create_app(config: AppConfig = None) -> FastAPI:
         system.router,
         prefix="/api/v1",
         tags=["系统"],
+    )
+    app.include_router(
+        video.router,
+        prefix="/api/v1",
+        tags=["视频诊断"],
+    )
+    app.include_router(
+        tasks.router,
+        prefix="/api/v1",
+        tags=["任务管理"],
     )
 
     return app

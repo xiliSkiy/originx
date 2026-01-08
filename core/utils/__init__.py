@@ -18,6 +18,15 @@ from .metrics import (
     calculate_saturation,
     estimate_noise,
 )
+from .video_utils import (
+    VideoLoader,
+    VideoMetadata,
+    FrameSampler,
+    FrameBuffer,
+    SampleStrategy,
+    calculate_frame_similarity,
+    calculate_histogram_difference,
+)
 
 __all__ = [
     # image_utils
@@ -36,5 +45,13 @@ __all__ = [
     "calculate_contrast",
     "calculate_saturation",
     "estimate_noise",
+    # video_utils
+    "VideoLoader",
+    "VideoMetadata",
+    "FrameSampler",
+    "FrameBuffer",
+    "SampleStrategy",
+    "calculate_frame_similarity",
+    "calculate_histogram_difference",
 ]
 
