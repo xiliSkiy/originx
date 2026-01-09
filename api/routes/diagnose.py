@@ -68,10 +68,10 @@ async def diagnose_image(
     file: Optional[UploadFile] = File(None),
     image: Optional[str] = Form(None),
     image_url: Optional[str] = Form(None),
-    profile: str = Form("normal"),
-    level: str = Form("standard"),
-    detectors: Optional[str] = Form(None),
-    return_evidence: bool = Form(True),
+    profile: str = Form(default="normal"),
+    level: str = Form(default="standard"),
+    detectors: Optional[str] = Form(default=None),
+    return_evidence: bool = Form(default=True),
 ):
     """
     对单张图像进行质量诊断
@@ -81,69 +81,113 @@ async def diagnose_image(
     - Base64编码 (image)
     - URL地址 (image_url)
     """
-    task_id = generate_task_id()
+    import logging
+    logger = logging.getLogger(__name__)
+    
+    logger.info(f"开始处理图像诊断请求: file={file.filename if file else None}, profile={profile}, level={level}")
+    
+    try:
+        task_id = generate_task_id()
 
-    # 加载图像
-    img = None
-    if file is not None:
-        contents = await file.read()
-        import numpy as np
-        import cv2
+        # 加载图像
+        img = None
+        if file is not None:
+            # 检查文件是否为空
+            if not file.filename:
+                raise HTTPException(
+                    status_code=400,
+                    detail={
+                        "code": 40008,
+                        "message": "File name is required",
+                        "details": "上传的文件必须包含文件名",
+                    },
+                )
+            
+            contents = await file.read()
+            if not contents or len(contents) == 0:
+                raise HTTPException(
+                    status_code=400,
+                    detail={
+                        "code": 40009,
+                        "message": "File is empty",
+                        "details": "上传的文件为空",
+                    },
+                )
+            
+            import numpy as np
+            import cv2
 
-        nparr = np.frombuffer(contents, np.uint8)
-        img = cv2.imdecode(nparr, cv2.IMREAD_COLOR)
-    elif image is not None:
-        img = load_image_from_base64(image)
-    elif image_url is not None:
-        img = load_image_from_url(image_url)
+            nparr = np.frombuffer(contents, np.uint8)
+            img = cv2.imdecode(nparr, cv2.IMREAD_COLOR)
+            if img is None:
+                logger.error(f"无法解码图像文件，文件名: {file.filename}, 文件大小: {len(contents)} bytes")
+                # 尝试检查文件头
+                file_header = contents[:16] if len(contents) >= 16 else contents
+                logger.error(f"文件头: {file_header.hex()}")
+        elif image is not None:
+            img = load_image_from_base64(image)
+        elif image_url is not None:
+            img = load_image_from_url(image_url)
 
-    if img is None:
-        raise HTTPException(
-            status_code=400,
-            detail={
-                "code": 40007,
-                "message": "Image decode failed",
-                "details": "无法解析图像，请检查图像格式或URL是否正确",
-            },
+        if img is None:
+            raise HTTPException(
+                status_code=400,
+                detail={
+                    "code": 40007,
+                    "message": "Image decode failed",
+                    "details": "无法解析图像，请检查图像格式或URL是否正确",
+                },
+            )
+
+        # 获取配置
+        config = get_config()
+        threshold_config = config.get_threshold_dict()
+        threshold_config["profile"] = profile
+        threshold_config["parallel_detection"] = config.parallel_detection
+        threshold_config["max_workers"] = config.max_workers
+
+        # 创建流水线
+        pipeline = DiagnosisPipeline(threshold_config)
+
+        # 解析检测级别
+        detection_level = DetectionLevel.from_string(level)
+
+        # 解析检测器列表
+        detector_list = None
+        if detectors:
+            detector_list = [d.strip() for d in detectors.split(",")]
+
+        # 执行诊断
+        result = pipeline.diagnose(
+            image=img,
+            level=detection_level,
+            detectors=detector_list,
+            image_id=task_id,
         )
 
-    # 获取配置
-    config = get_config()
-    threshold_config = config.get_threshold_dict()
-    threshold_config["profile"] = profile
-    threshold_config["parallel_detection"] = config.parallel_detection
-    threshold_config["max_workers"] = config.max_workers
+        # 构建响应
+        data = result_to_response(result, task_id, return_evidence)
+        meta = MetaInfo(
+            process_time_ms=round(result.total_process_time_ms, 2),
+            detection_level=result.detection_level.name,
+            profile=profile,
+            version="1.5.0",
+            timestamp=result.timestamp,
+        )
 
-    # 创建流水线
-    pipeline = DiagnosisPipeline(threshold_config)
-
-    # 解析检测级别
-    detection_level = DetectionLevel.from_string(level)
-
-    # 解析检测器列表
-    detector_list = None
-    if detectors:
-        detector_list = [d.strip() for d in detectors.split(",")]
-
-    # 执行诊断
-    result = pipeline.diagnose(
-        image=img,
-        level=detection_level,
-        detectors=detector_list,
-        image_id=task_id,
-    )
-
-    # 构建响应
-    data = result_to_response(result, task_id, return_evidence)
-    meta = MetaInfo(
-        process_time_ms=round(result.total_process_time_ms, 2),
-        detection_level=result.detection_level.name,
-        profile=profile,
-        version="1.0.0",
-        timestamp=result.timestamp,
-    )
-
-    return DiagnoseResponse(code=0, message="success", data=data, meta=meta)
+        return DiagnoseResponse(code=0, message="success", data=data, meta=meta)
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.exception(f"图像诊断失败: {e}")
+        raise HTTPException(
+            status_code=500,
+            detail={
+                "code": 50001,
+                "message": "Internal server error",
+                "details": f"诊断过程中发生错误: {str(e)}",
+            },
+        )
 
 
 @router.post("/image/json", response_model=DiagnoseResponse, summary="单图诊断（JSON请求）")
@@ -197,7 +241,7 @@ async def diagnose_image_json(request: DiagnoseImageRequest):
         process_time_ms=round(result.total_process_time_ms, 2),
         detection_level=result.detection_level.name,
         profile=request.profile,
-        version="1.0.0",
+        version="1.5.0",
         timestamp=result.timestamp,
     )
 
@@ -286,7 +330,7 @@ async def diagnose_batch(request: DiagnoseBatchRequest):
         process_time_ms=round(total_time, 2),
         detection_level=detection_level.name,
         profile=request.profile,
-        version="1.0.0",
+        version="1.5.0",
         timestamp=datetime.now().isoformat(),
     )
 

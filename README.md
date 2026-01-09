@@ -65,6 +65,8 @@ pip install -e .
 
 ### Docker 安装
 
+#### 仅后端服务
+
 ```bash
 # 构建镜像
 docker build -t originx:latest .
@@ -72,6 +74,32 @@ docker build -t originx:latest .
 # 运行容器
 docker run -p 8080:8080 originx:latest
 ```
+
+#### 完整部署（后端 + 前端）
+
+使用 Docker Compose 一键部署前后端：
+
+```bash
+# 启动所有服务
+docker-compose up -d
+
+# 查看服务状态
+docker-compose ps
+
+# 查看日志
+docker-compose logs -f originx
+docker-compose logs -f originx-web
+
+# 停止服务
+docker-compose down
+```
+
+访问地址：
+- 前端 Web UI：http://localhost（默认端口 80）
+- 后端 API：http://localhost:8080
+- API 文档：http://localhost:8080/docs
+
+> **注意**：完整部署需要配置 `Dockerfile.web` 和更新 `docker-compose.yml`，详见 [Web UI 部署说明](#web-uiv15-新增)
 
 ### 验证安装
 
@@ -254,23 +282,247 @@ server:
 
 ## Web UI（V1.5 新增）
 
-启动 API 服务后，访问 Web UI：
+### 开发环境部署
 
 ```bash
-# 启动后端服务
+# 1. 启动后端 API 服务
 originx serve -p 8080
 
-# 启动前端（需要先安装依赖）
+# 2. 进入前端目录
 cd web
+
+# 3. 安装依赖
 npm install
+
+# 4. 启动开发服务器（默认端口 3000）
 npm run dev
 ```
 
-Web UI 功能：
-- 📊 **仪表盘**: 系统概览、健康度统计
-- 🔍 **检测中心**: 图像/视频上传检测、结果查看
-- ⏰ **任务管理**: 定时任务配置、执行历史
-- ⚙️ **系统设置**: 阈值配置、检测器管理
+访问地址：http://localhost:3000
+
+开发环境会自动代理 API 请求到后端（配置在 `vite.config.ts` 中）。
+
+### 生产环境部署
+
+#### 方式一：构建静态文件 + Nginx
+
+```bash
+# 1. 构建前端项目
+cd web
+npm install
+npm run build
+
+# 2. 构建产物在 web/dist 目录
+# 3. 配置 Nginx
+```
+
+**Nginx 配置示例**：
+
+```nginx
+server {
+    listen 80;
+    server_name originx.example.com;
+    
+    # 前端静态文件
+    location / {
+        root /path/to/originx/web/dist;
+        try_files $uri $uri/ /index.html;
+        index index.html;
+    }
+    
+    # 后端 API 代理
+    location /api {
+        proxy_pass http://localhost:8080;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+    }
+}
+```
+
+#### 方式二：Docker 部署（推荐）
+
+创建 `Dockerfile.web`：
+
+```dockerfile
+# 构建阶段
+FROM node:18-alpine AS builder
+WORKDIR /app
+COPY web/package*.json ./
+RUN npm ci
+COPY web/ ./
+RUN npm run build
+
+# 运行阶段
+FROM nginx:alpine
+COPY --from=builder /app/dist /usr/share/nginx/html
+COPY web/nginx.conf /etc/nginx/conf.d/default.conf
+EXPOSE 80
+CMD ["nginx", "-g", "daemon off;"]
+```
+
+创建 `web/nginx.conf`：
+
+```nginx
+server {
+    listen 80;
+    server_name localhost;
+    
+    root /usr/share/nginx/html;
+    index index.html;
+    
+    location / {
+        try_files $uri $uri/ /index.html;
+    }
+    
+    location /api {
+        proxy_pass http://originx:8080;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+    }
+}
+```
+
+更新 `docker-compose.yml`：
+
+```yaml
+services:
+  originx:
+    # ... 后端配置 ...
+  
+  originx-web:
+    build:
+      context: .
+      dockerfile: Dockerfile.web
+    container_name: originx-web
+    ports:
+      - "80:80"
+    depends_on:
+      - originx
+    restart: unless-stopped
+```
+
+启动服务：
+
+```bash
+docker-compose up -d
+```
+
+#### 方式三：集成到后端服务
+
+将构建后的静态文件复制到后端服务目录，由 FastAPI 直接提供静态文件服务：
+
+```python
+# 在 api/main.py 中添加
+from fastapi.staticfiles import StaticFiles
+
+app.mount("/", StaticFiles(directory="web/dist", html=True), name="static")
+```
+
+然后构建前端并复制文件：
+
+```bash
+cd web && npm run build
+cp -r dist/* ../static/
+```
+
+### 环境配置
+
+#### 开发环境
+
+开发环境使用 Vite 代理，配置在 `vite.config.ts` 中：
+
+```typescript
+server: {
+  proxy: {
+    '/api': {
+      target: 'http://localhost:8080',  // 后端 API 地址
+      changeOrigin: true,
+    },
+  },
+}
+```
+
+#### 生产环境
+
+生产环境需要配置 API 基础地址，有两种方式：
+
+**方式一：使用环境变量**
+
+创建 `web/.env.production`：
+
+```env
+VITE_API_BASE_URL=http://your-api-server:8080
+```
+
+修改 `web/src/api/request.ts`：
+
+```typescript
+const request: AxiosInstance = axios.create({
+  baseURL: import.meta.env.VITE_API_BASE_URL || '/api/v1',
+  timeout: 60000,
+})
+```
+
+**方式二：使用 Nginx 代理（推荐）**
+
+前端请求统一使用相对路径 `/api`，由 Nginx 代理到后端，无需修改代码。这是生产环境推荐的方式，配置简单且性能好。
+
+### 常见问题
+
+#### 前端无法连接后端 API
+
+1. **检查后端服务是否启动**：
+   ```bash
+   curl http://localhost:8080/api/v1/health
+   ```
+
+2. **检查 CORS 配置**：
+   确保后端 API 允许前端域名访问，在 `api/main.py` 中配置：
+   ```python
+   from fastapi.middleware.cors import CORSMiddleware
+   
+   app.add_middleware(
+       CORSMiddleware,
+       allow_origins=["http://localhost:3000", "http://localhost"],
+       allow_credentials=True,
+       allow_methods=["*"],
+       allow_headers=["*"],
+   )
+   ```
+
+3. **检查代理配置**：
+   - 开发环境：检查 `vite.config.ts` 中的代理配置
+   - 生产环境：检查 Nginx 配置中的 `/api` 代理规则
+
+#### 构建失败
+
+```bash
+# 清除缓存重新安装
+cd web
+rm -rf node_modules package-lock.json
+npm install
+npm run build
+```
+
+#### 静态资源加载失败
+
+确保构建后的 `dist` 目录包含所有资源文件，检查 `vite.config.ts` 中的 `base` 配置：
+
+```typescript
+export default defineConfig({
+  base: '/',  // 如果部署在子路径，改为 '/originx/'
+  // ...
+})
+```
+
+### Web UI 功能
+
+- 📊 **仪表盘**: 系统概览、健康度统计、异常趋势图表
+- 🔍 **检测中心**: 图像/视频上传检测、结果查看、批量检测
+- ⏰ **任务管理**: 定时任务配置、执行历史、任务控制
+- ⚙️ **系统设置**: 阈值配置、检测器管理、配置模板切换
 
 ## 项目结构
 

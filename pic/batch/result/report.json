@@ -1,10 +1,11 @@
 {
   "summary": {
-    "total": 3,
+    "total": 5,
     "normal": 1,
-    "abnormal": 2,
+    "abnormal": 4,
     "issue_distribution": {
       "gaussian_noise": 1,
+      "blur": 2,
       "grayscale": 1
     }
   },
@@ -51,7 +52,7 @@
             "is_solid_color": false,
             "black_threshold": 10.0
           },
-          "process_time_ms": 8.56,
+          "process_time_ms": 42.44,
           "detection_level": "FAST"
         },
         {
@@ -77,7 +78,7 @@
             "blue_screen_confidence": 0.0,
             "green_screen_confidence": 0.0
           },
-          "process_time_ms": 7.71,
+          "process_time_ms": 43.79,
           "detection_level": "FAST"
         },
         {
@@ -109,7 +110,7 @@
               "uniform_score": 0.0
             }
           },
-          "process_time_ms": 37.75,
+          "process_time_ms": 97.08,
           "detection_level": "FAST"
         },
         {
@@ -131,7 +132,7 @@
             "brightness_min_threshold": 20.0,
             "brightness_max_threshold": 235.0
           },
-          "process_time_ms": 18.3,
+          "process_time_ms": 54.86,
           "detection_level": "FAST"
         },
         {
@@ -149,7 +150,7 @@
             "laplacian_variance": 2367.8466,
             "method": "fast"
           },
-          "process_time_ms": 3.2,
+          "process_time_ms": 20.07,
           "detection_level": "FAST"
         },
         {
@@ -179,7 +180,7 @@
             "noise_sigma": 32.6168,
             "noise_threshold": 15.0
           },
-          "process_time_ms": 25.02,
+          "process_time_ms": 63.22,
           "detection_level": "FAST"
         },
         {
@@ -200,7 +201,7 @@
             "max_value": 255.0,
             "contrast_threshold": 30.0
           },
-          "process_time_ms": 2.72,
+          "process_time_ms": 1.13,
           "detection_level": "FAST"
         },
         {
@@ -221,7 +222,7 @@
             "stripe_direction": "none",
             "stripe_threshold": 0.3
           },
-          "process_time_ms": 27.42,
+          "process_time_ms": 46.81,
           "detection_level": "FAST"
         }
       ],
@@ -229,10 +230,461 @@
       "independent_issues": [
         "gaussian_noise"
       ],
-      "total_process_time_ms": 43.12,
+      "total_process_time_ms": 110.7,
       "detection_level": "FAST",
       "config_profile": "normal",
-      "timestamp": "2026-01-07T23:57:58.542905"
+      "timestamp": "2026-01-09T21:37:36.078421"
+    },
+    {
+      "image_id": "",
+      "image_path": "../WechatIMG46.jpg",
+      "image_size": [
+        4096,
+        3072
+      ],
+      "is_abnormal": true,
+      "primary_issue": "blur",
+      "severity": "warning",
+      "scores": {
+        "signal_loss": 109.8867,
+        "color": 0.4403,
+        "occlusion": 0.0579,
+        "brightness": 109.8867,
+        "blur": 40.884,
+        "noise": 4.4477,
+        "contrast": 29.2032,
+        "stripe": 0.0
+      },
+      "detection_results": [
+        {
+          "detector_name": "signal_loss",
+          "issue_type": "signal_normal",
+          "is_abnormal": false,
+          "score": 109.8867,
+          "threshold": 10.0,
+          "confidence": 0.8585,
+          "severity": "normal",
+          "explanation": "信号正常",
+          "possible_causes": [],
+          "suggestions": [],
+          "evidence": {
+            "mean_brightness": 109.8867,
+            "std_brightness": 29.2032,
+            "min_brightness": 3.0,
+            "max_brightness": 255.0,
+            "is_black_screen": false,
+            "is_white_screen": false,
+            "is_solid_color": false,
+            "black_threshold": 10.0
+          },
+          "process_time_ms": 576.27,
+          "detection_level": "FAST"
+        },
+        {
+          "detector_name": "color",
+          "issue_type": "color_normal",
+          "is_abnormal": false,
+          "score": 0.4403,
+          "threshold": 30.0,
+          "confidence": 1.0,
+          "severity": "normal",
+          "explanation": "图像颜色正常",
+          "possible_causes": [],
+          "suggestions": [],
+          "evidence": {
+            "mean_saturation": 49.1699,
+            "b_channel_mean": 109.6213,
+            "g_channel_mean": 110.1632,
+            "r_channel_mean": 109.3842,
+            "rgb_average": 109.7229,
+            "max_channel_deviation": 0.4403,
+            "is_grayscale": false,
+            "is_color_cast": false,
+            "blue_screen_confidence": 0.0,
+            "green_screen_confidence": 0.0
+          },
+          "process_time_ms": 638.6,
+          "detection_level": "FAST"
+        },
+        {
+          "detector_name": "occlusion",
+          "issue_type": "occlusion_normal",
+          "is_abnormal": false,
+          "score": 0.0579,
+          "threshold": 0.3,
+          "confidence": 0.8071,
+          "severity": "normal",
+          "explanation": "画面未检测到明显遮挡",
+          "possible_causes": [],
+          "suggestions": [],
+          "evidence": {
+            "occlusion_score": 0.0579,
+            "edge_density": 0.0179,
+            "global_contrast": 29.2032,
+            "hue_std": 41.6004,
+            "saturation_mean": 49.1699,
+            "brightness_range": 252.0,
+            "very_low_texture_ratio": 0.5994,
+            "very_uniform_ratio": 0.1427,
+            "occlusion_threshold": 0.3,
+            "sub_scores": {
+              "edge_score": 0.10739660263061523,
+              "contrast_score": 0.26991924902868536,
+              "color_score": 0,
+              "brightness_score": 0,
+              "uniform_score": 0.14274088541666666
+            }
+          },
+          "process_time_ms": 2826.15,
+          "detection_level": "FAST"
+        },
+        {
+          "detector_name": "brightness",
+          "issue_type": "brightness_normal",
+          "is_abnormal": false,
+          "score": 109.8867,
+          "threshold": 20.0,
+          "confidence": 0.8362,
+          "severity": "normal",
+          "explanation": "图像平均亮度109.9，亮度正常",
+          "possible_causes": [],
+          "suggestions": [],
+          "evidence": {
+            "mean_brightness": 109.8867,
+            "std_brightness": 29.2032,
+            "percentile_5": 57.0,
+            "percentile_95": 154.0,
+            "brightness_min_threshold": 20.0,
+            "brightness_max_threshold": 235.0
+          },
+          "process_time_ms": 872.15,
+          "detection_level": "FAST"
+        },
+        {
+          "detector_name": "blur",
+          "issue_type": "blur",
+          "is_abnormal": true,
+          "score": 40.884,
+          "threshold": 100.0,
+          "confidence": 0.5912,
+          "severity": "warning",
+          "explanation": "图像清晰度评分40.9，低于阈值100.0，判定为中度模糊",
+          "possible_causes": [
+            "镜头脏污或有水渍",
+            "摄像头对焦不准确"
+          ],
+          "suggestions": [
+            "检查并清洁摄像头镜头",
+            "调整摄像头对焦设置",
+            "检查摄像头固定是否稳固",
+            "检查摄像头是否需要更换"
+          ],
+          "evidence": {
+            "laplacian_variance": 40.884,
+            "method": "fast"
+          },
+          "process_time_ms": 457.61,
+          "detection_level": "FAST"
+        },
+        {
+          "detector_name": "noise",
+          "issue_type": "noise_normal",
+          "is_abnormal": false,
+          "score": 4.4477,
+          "threshold": 15.0,
+          "confidence": 0.7035,
+          "severity": "normal",
+          "explanation": "噪声水平4.4，在正常范围内",
+          "possible_causes": [],
+          "suggestions": [],
+          "evidence": {
+            "estimation_method": "laplacian_mad",
+            "noise_sigma": 4.4477,
+            "noise_threshold": 15.0
+          },
+          "process_time_ms": 833.43,
+          "detection_level": "FAST"
+        },
+        {
+          "detector_name": "contrast",
+          "issue_type": "low_contrast",
+          "is_abnormal": true,
+          "score": 29.2032,
+          "threshold": 30.0,
+          "confidence": 0.0266,
+          "severity": "info",
+          "explanation": "图像对比度29.2，低于阈值30.0，动态范围252.0，画面层次感较差",
+          "possible_causes": [
+            "光线条件较差",
+            "雾气或灰尘影响",
+            "摄像头参数设置不当",
+            "镜头脏污"
+          ],
+          "suggestions": [
+            "检查并清洁镜头",
+            "调整摄像头对比度参数",
+            "改善环境光线条件"
+          ],
+          "evidence": {
+            "std_contrast": 29.2032,
+            "dynamic_range": 252.0,
+            "min_value": 3.0,
+            "max_value": 255.0,
+            "contrast_threshold": 30.0
+          },
+          "process_time_ms": 320.86,
+          "detection_level": "FAST"
+        },
+        {
+          "detector_name": "stripe",
+          "issue_type": "stripe_normal",
+          "is_abnormal": false,
+          "score": 0.0,
+          "threshold": 0.3,
+          "confidence": 0.9999,
+          "severity": "normal",
+          "explanation": "未检测到明显条纹干扰",
+          "possible_causes": [],
+          "suggestions": [],
+          "evidence": {
+            "horizontal_stripe_energy": 0.0,
+            "vertical_stripe_energy": 0.0,
+            "stripe_strength": 0.0,
+            "stripe_direction": "none",
+            "stripe_threshold": 0.3
+          },
+          "process_time_ms": 1712.78,
+          "detection_level": "FAST"
+        }
+      ],
+      "suppressed_issues": [],
+      "independent_issues": [
+        "blur",
+        "low_contrast"
+      ],
+      "total_process_time_ms": 2870.06,
+      "detection_level": "FAST",
+      "config_profile": "normal",
+      "timestamp": "2026-01-09T21:37:39.091640"
+    },
+    {
+      "image_id": "",
+      "image_path": "../WechatIMG47.jpg",
+      "image_size": [
+        4096,
+        3072
+      ],
+      "is_abnormal": true,
+      "primary_issue": "blur",
+      "severity": "info",
+      "scores": {
+        "signal_loss": 87.5613,
+        "color": 1.9156,
+        "occlusion": 0.0048,
+        "brightness": 87.5613,
+        "blur": 87.4934,
+        "noise": 4.4477,
+        "contrast": 37.829,
+        "stripe": 0.0001
+      },
+      "detection_results": [
+        {
+          "detector_name": "signal_loss",
+          "issue_type": "signal_normal",
+          "is_abnormal": false,
+          "score": 87.5613,
+          "threshold": 10.0,
+          "confidence": 0.6841,
+          "severity": "normal",
+          "explanation": "信号正常",
+          "possible_causes": [],
+          "suggestions": [],
+          "evidence": {
+            "mean_brightness": 87.5613,
+            "std_brightness": 37.829,
+            "min_brightness": 0.0,
+            "max_brightness": 255.0,
+            "is_black_screen": false,
+            "is_white_screen": false,
+            "is_solid_color": false,
+            "black_threshold": 10.0
+          },
+          "process_time_ms": 159.05,
+          "detection_level": "FAST"
+        },
+        {
+          "detector_name": "color",
+          "issue_type": "color_normal",
+          "is_abnormal": false,
+          "score": 1.9156,
+          "threshold": 30.0,
+          "confidence": 1.0,
+          "severity": "normal",
+          "explanation": "图像颜色正常",
+          "possible_causes": [],
+          "suggestions": [],
+          "evidence": {
+            "mean_saturation": 81.0572,
+            "b_channel_mean": 84.8485,
+            "g_channel_mean": 88.3076,
+            "r_channel_mean": 87.1362,
+            "rgb_average": 86.7641,
+            "max_channel_deviation": 1.9156,
+            "is_grayscale": false,
+            "is_color_cast": false,
+            "blue_screen_confidence": 0.0,
+            "green_screen_confidence": 0.0
+          },
+          "process_time_ms": 363.11,
+          "detection_level": "FAST"
+        },
+        {
+          "detector_name": "occlusion",
+          "issue_type": "occlusion_normal",
+          "is_abnormal": false,
+          "score": 0.0048,
+          "threshold": 0.3,
+          "confidence": 0.984,
+          "severity": "normal",
+          "explanation": "画面未检测到明显遮挡",
+          "possible_causes": [],
+          "suggestions": [],
+          "evidence": {
+            "occlusion_score": 0.0048,
+            "edge_density": 0.0431,
+            "global_contrast": 37.829,
+            "hue_std": 46.4662,
+            "saturation_mean": 81.0572,
+            "brightness_range": 255.0,
+            "very_low_texture_ratio": 0.339,
+            "very_uniform_ratio": 0.123,
+            "occlusion_threshold": 0.3,
+            "sub_scores": {
+              "edge_score": 0,
+              "contrast_score": 0.05427398143683093,
+              "color_score": 0,
+              "brightness_score": 0,
+              "uniform_score": 0.12296549479166667
+            }
+          },
+          "process_time_ms": 2122.52,
+          "detection_level": "FAST"
+        },
+        {
+          "detector_name": "brightness",
+          "issue_type": "brightness_normal",
+          "is_abnormal": false,
+          "score": 87.5613,
+          "threshold": 20.0,
+          "confidence": 0.6285,
+          "severity": "normal",
+          "explanation": "图像平均亮度87.6，亮度正常",
+          "possible_causes": [],
+          "suggestions": [],
+          "evidence": {
+            "mean_brightness": 87.5613,
+            "std_brightness": 37.829,
+            "percentile_5": 31.0,
+            "percentile_95": 147.0,
+            "brightness_min_threshold": 20.0,
+            "brightness_max_threshold": 235.0
+          },
+          "process_time_ms": 619.95,
+          "detection_level": "FAST"
+        },
+        {
+          "detector_name": "blur",
+          "issue_type": "blur",
+          "is_abnormal": true,
+          "score": 87.4934,
+          "threshold": 100.0,
+          "confidence": 0.1251,
+          "severity": "info",
+          "explanation": "图像清晰度评分87.5，低于阈值100.0，判定为轻微模糊",
+          "possible_causes": [
+            "镜头脏污或有水渍",
+            "摄像头对焦不准确"
+          ],
+          "suggestions": [
+            "检查并清洁摄像头镜头"
+          ],
+          "evidence": {
+            "laplacian_variance": 87.4934,
+            "method": "fast"
+          },
+          "process_time_ms": 322.63,
+          "detection_level": "FAST"
+        },
+        {
+          "detector_name": "noise",
+          "issue_type": "noise_normal",
+          "is_abnormal": false,
+          "score": 4.4477,
+          "threshold": 15.0,
+          "confidence": 0.7035,
+          "severity": "normal",
+          "explanation": "噪声水平4.4，在正常范围内",
+          "possible_causes": [],
+          "suggestions": [],
+          "evidence": {
+            "estimation_method": "laplacian_mad",
+            "noise_sigma": 4.4477,
+            "noise_threshold": 15.0
+          },
+          "process_time_ms": 489.51,
+          "detection_level": "FAST"
+        },
+        {
+          "detector_name": "contrast",
+          "issue_type": "contrast_normal",
+          "is_abnormal": false,
+          "score": 37.829,
+          "threshold": 30.0,
+          "confidence": 0.261,
+          "severity": "normal",
+          "explanation": "图像对比度37.8，对比度正常",
+          "possible_causes": [],
+          "suggestions": [],
+          "evidence": {
+            "std_contrast": 37.829,
+            "dynamic_range": 255.0,
+            "min_value": 0.0,
+            "max_value": 255.0,
+            "contrast_threshold": 30.0
+          },
+          "process_time_ms": 127.83,
+          "detection_level": "FAST"
+        },
+        {
+          "detector_name": "stripe",
+          "issue_type": "stripe_normal",
+          "is_abnormal": false,
+          "score": 0.0001,
+          "threshold": 0.3,
+          "confidence": 0.9997,
+          "severity": "normal",
+          "explanation": "未检测到明显条纹干扰",
+          "possible_causes": [],
+          "suggestions": [],
+          "evidence": {
+            "horizontal_stripe_energy": 0.0001,
+            "vertical_stripe_energy": 0.0001,
+            "stripe_strength": 0.0001,
+            "stripe_direction": "none",
+            "stripe_threshold": 0.3
+          },
+          "process_time_ms": 1591.92,
+          "detection_level": "FAST"
+        }
+      ],
+      "suppressed_issues": [],
+      "independent_issues": [
+        "blur"
+      ],
+      "total_process_time_ms": 2251.88,
+      "detection_level": "FAST",
+      "config_profile": "normal",
+      "timestamp": "2026-01-09T21:37:41.486330"
     },
     {
       "image_id": "",
@@ -276,7 +728,7 @@
             "is_solid_color": false,
             "black_threshold": 10.0
           },
-          "process_time_ms": 2.5,
+          "process_time_ms": 3.58,
           "detection_level": "FAST"
         },
         {
@@ -311,7 +763,7 @@
             "blue_screen_confidence": 0.0,
             "green_screen_confidence": 0.0
           },
-          "process_time_ms": 3.08,
+          "process_time_ms": 25.94,
           "detection_level": "FAST"
         },
         {
@@ -343,7 +795,7 @@
               "uniform_score": 0.026785714285714284
             }
           },
-          "process_time_ms": 11.88,
+          "process_time_ms": 44.12,
           "detection_level": "FAST"
         },
         {
@@ -365,7 +817,7 @@
             "brightness_min_threshold": 20.0,
             "brightness_max_threshold": 235.0
           },
-          "process_time_ms": 4.5,
+          "process_time_ms": 26.24,
           "detection_level": "FAST"
         },
         {
@@ -383,7 +835,7 @@
             "laplacian_variance": 495.0051,
             "method": "fast"
           },
-          "process_time_ms": 1.41,
+          "process_time_ms": 8.23,
           "detection_level": "FAST"
         },
         {
@@ -402,7 +854,7 @@
             "noise_sigma": 2.9652,
             "noise_threshold": 15.0
           },
-          "process_time_ms": 3.19,
+          "process_time_ms": 9.12,
           "detection_level": "FAST"
         },
         {
@@ -423,7 +875,7 @@
             "max_value": 255.0,
             "contrast_threshold": 30.0
           },
-          "process_time_ms": 1.75,
+          "process_time_ms": 3.26,
           "detection_level": "FAST"
         },
         {
@@ -444,7 +896,7 @@
             "stripe_direction": "none",
             "stripe_threshold": 0.3
           },
-          "process_time_ms": 9.04,
+          "process_time_ms": 12.16,
           "detection_level": "FAST"
         }
       ],
@@ -452,10 +904,10 @@
       "independent_issues": [
         "grayscale"
       ],
-      "total_process_time_ms": 15.53,
+      "total_process_time_ms": 46.81,
       "detection_level": "FAST",
       "config_profile": "normal",
-      "timestamp": "2026-01-07T23:57:58.559898"
+      "timestamp": "2026-01-09T21:37:41.539176"
     },
     {
       "image_id": "",
@@ -499,7 +951,7 @@
             "is_solid_color": false,
             "black_threshold": 10.0
           },
-          "process_time_ms": 23.2,
+          "process_time_ms": 25.1,
           "detection_level": "FAST"
         },
         {
@@ -525,7 +977,7 @@
             "blue_screen_confidence": 0.0,
             "green_screen_confidence": 0.0
           },
-          "process_time_ms": 35.04,
+          "process_time_ms": 43.3,
           "detection_level": "FAST"
         },
         {
@@ -557,7 +1009,7 @@
               "uniform_score": 0.09482758620689655
             }
           },
-          "process_time_ms": 198.58,
+          "process_time_ms": 185.23,
           "detection_level": "FAST"
         },
         {
@@ -579,7 +1031,7 @@
             "brightness_min_threshold": 20.0,
             "brightness_max_threshold": 235.0
           },
-          "process_time_ms": 66.01,
+          "process_time_ms": 37.05,
           "detection_level": "FAST"
         },
         {
@@ -597,7 +1049,7 @@
             "laplacian_variance": 779.3151,
             "method": "fast"
           },
-          "process_time_ms": 35.03,
+          "process_time_ms": 17.45,
           "detection_level": "FAST"
         },
         {
@@ -616,7 +1068,7 @@
             "noise_sigma": 2.9652,
             "noise_threshold": 15.0
           },
-          "process_time_ms": 46.37,
+          "process_time_ms": 33.11,
           "detection_level": "FAST"
         },
         {
@@ -637,7 +1089,7 @@
             "max_value": 255.0,
             "contrast_threshold": 30.0
           },
-          "process_time_ms": 9.6,
+          "process_time_ms": 16.63,
           "detection_level": "FAST"
         },
         {
@@ -658,16 +1110,16 @@
             "stripe_direction": "horizontal",
             "stripe_threshold": 0.3
           },
-          "process_time_ms": 185.54,
+          "process_time_ms": 205.31,
           "detection_level": "FAST"
         }
       ],
       "suppressed_issues": [],
       "independent_issues": [],
-      "total_process_time_ms": 261.1,
+      "total_process_time_ms": 254.38,
       "detection_level": "FAST",
       "config_profile": "normal",
-      "timestamp": "2026-01-07T23:57:58.831107"
+      "timestamp": "2026-01-09T21:37:41.818498"
     }
   ]
 }

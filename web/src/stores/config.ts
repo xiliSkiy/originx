@@ -15,6 +15,7 @@ export const useConfigStore = defineStore('config', () => {
       systemInfo.value = await configApi.getSystemInfo()
     } catch (error) {
       console.error('Failed to load system info:', error)
+      throw error
     }
   }
   

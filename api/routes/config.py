@@ -214,3 +214,32 @@ async def update_thresholds(request: UpdateThresholdsRequest):
 
     return BaseResponse(code=0, message="success", data=thresholds.model_dump())
 
+
+@router.post("/profiles/{name}/apply", response_model=ConfigResponse, summary="应用配置模板")
+async def apply_profile(name: str):
+    """应用指定的配置模板"""
+    if name not in PRESET_PROFILES:
+        raise HTTPException(
+            status_code=404,
+            detail={
+                "code": 40005,
+                "message": "Profile not found",
+                "details": f"有效的配置模板: {list(PRESET_PROFILES.keys())}",
+            },
+        )
+    
+    config = get_config()
+    config.profile = name
+    set_config(config)
+    
+    data = ConfigData(
+        profile=config.profile,
+        detection_level=config.detection_level,
+        parallel_detection=config.parallel_detection,
+        max_workers=config.max_workers,
+        gpu_enabled=config.gpu_enabled,
+        thresholds=thresholds_to_info(config),
+    )
+    
+    return ConfigResponse(code=0, message="success", data=data)
+

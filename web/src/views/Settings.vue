@@ -202,12 +202,12 @@ onMounted(async () => {
   await configStore.loadSystemInfo()
   if (configStore.systemInfo) {
     systemInfo.value = {
-      version: configStore.systemInfo.version,
-      pythonVersion: configStore.systemInfo.python_version,
-      opencvVersion: configStore.systemInfo.opencv_version,
-      platform: configStore.systemInfo.platform,
-      gpuAvailable: configStore.systemInfo.gpu_available,
-      detectorsCount: configStore.systemInfo.detectors_count,
+      version: configStore.systemInfo.version || '1.5.0',
+      pythonVersion: configStore.systemInfo.python_version || '',
+      opencvVersion: configStore.systemInfo.opencv_version || '',
+      platform: configStore.systemInfo.platform || '',
+      gpuAvailable: configStore.systemInfo.gpu_available || false,
+      detectorsCount: configStore.systemInfo.detectors_count || 0,
     }
   }
 })

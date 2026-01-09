@@ -1,13 +1,23 @@
 """FastAPI应用入口"""
 
+import logging
+import time
 from contextlib import asynccontextmanager
-from typing import AsyncGenerator
+from typing import AsyncGenerator, Callable
 
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
+from starlette.middleware.base import BaseHTTPMiddleware
 
 from config import AppConfig, get_config, set_config
 from .routes import diagnose, config as config_routes, detectors, system, video, tasks
+
+# 配置日志
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+)
+logger = logging.getLogger(__name__)
 
 
 @asynccontextmanager
@@ -48,13 +58,34 @@ def create_app(config: AppConfig = None) -> FastAPI:
     app = FastAPI(
         title="OriginX",
         description="图像/视频质量诊断系统 API",
-        version="1.0.0",
+        version="1.5.0",
         docs_url="/docs",
         redoc_url="/redoc",
         openapi_url="/openapi.json",
         lifespan=lifespan,
     )
 
+    # 请求日志中间件
+    class RequestLoggingMiddleware(BaseHTTPMiddleware):
+        async def dispatch(self, request: Request, call_next: Callable):
+            start_time = time.time()
+            # 记录请求信息
+            logger.info(f"收到请求: {request.method} {request.url.path}")
+            logger.info(f"  查询参数: {dict(request.query_params)}")
+            logger.info(f"  客户端: {request.client.host if request.client else 'unknown'}")
+            
+            try:
+                response = await call_next(request)
+                process_time = time.time() - start_time
+                logger.info(f"请求完成: {request.method} {request.url.path} - {response.status_code} ({process_time:.3f}s)")
+                return response
+            except Exception as e:
+                process_time = time.time() - start_time
+                logger.error(f"请求失败: {request.method} {request.url.path} - 错误: {e} ({process_time:.3f}s)", exc_info=True)
+                raise
+    
+    app.add_middleware(RequestLoggingMiddleware)
+    
     # CORS中间件
     app.add_middleware(
         CORSMiddleware,

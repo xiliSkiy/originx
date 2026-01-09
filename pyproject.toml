@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "originx"
-version = "1.0.0"
+version = "1.5.0"
 description = "图像/视频质量诊断系统"
 readme = "README.md"
 license = {text = "MIT"}
@@ -61,7 +61,7 @@ Documentation = "https://originx.readthedocs.io"
 
 [tool.setuptools.packages.find]
 where = ["."]
-include = ["core*", "api*", "cli*", "config*", "services*", "storage*", "utils*"]
+include = ["core*", "api*", "cli*", "config*", "services*", "storage*", "utils*", "scheduler*", "reports*"]
 
 [tool.black]
 line-length = 88

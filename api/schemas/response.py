@@ -18,7 +18,7 @@ class MetaInfo(BaseModel):
     process_time_ms: float = Field(..., description="处理耗时(毫秒)")
     detection_level: str = Field(..., description="检测级别")
     profile: str = Field(..., description="配置模板")
-    version: str = Field("1.0.0", description="API版本")
+    version: str = Field("1.5.0", description="API版本")
     timestamp: str = Field(..., description="时间戳")
 
 
@@ -172,8 +172,11 @@ class SystemInfoData(BaseModel):
     version: str = Field(..., description="版本")
     python_version: str = Field(..., description="Python版本")
     opencv_version: str = Field(..., description="OpenCV版本")
-    detectors_count: int = Field(..., description="检测器数量")
-    supported_formats: List[str] = Field(..., description="支持的图像格式")
+    platform: str = Field(..., description="运行平台")
+    detectors_count: int = Field(..., description="检测器总数")
+    image_detectors: int = Field(..., description="图像检测器数量")
+    video_detectors: int = Field(..., description="视频检测器数量")
+    supported_formats: List[str] = Field(..., description="支持的格式")
     gpu_available: bool = Field(..., description="GPU是否可用")
 
 

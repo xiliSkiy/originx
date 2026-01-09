@@ -24,7 +24,7 @@ export const configApi = {
   
   // 更新配置
   updateConfig(config: Record<string, any>) {
-    return request.post('/config', config)
+    return request.put('/config', config)
   },
   
   // 获取配置模板列表
@@ -39,7 +39,7 @@ export const configApi = {
   
   // 获取系统信息
   getSystemInfo() {
-    return request.get<SystemInfo>('/system/info')
+    return request.get<SystemInfo>('/info')
   },
   
   // 健康检查
