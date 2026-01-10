@@ -10,7 +10,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from starlette.middleware.base import BaseHTTPMiddleware
 
 from config import AppConfig, get_config, set_config
-from .routes import diagnose, config as config_routes, detectors, system, video, tasks
+from .routes import diagnose, config as config_routes, detectors, system, video, tasks, stream, baseline
 
 # 配置日志
 logging.basicConfig(
@@ -125,6 +125,16 @@ def create_app(config: AppConfig = None) -> FastAPI:
         tasks.router,
         prefix="/api/v1",
         tags=["任务管理"],
+    )
+    app.include_router(
+        stream.router,
+        prefix="/api/v1/diagnose",
+        tags=["流检测"],
+    )
+    app.include_router(
+        baseline.router,
+        prefix="/api/v1",
+        tags=["基准图像"],
     )
 
     return app
