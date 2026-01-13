@@ -699,34 +699,42 @@
         /* ========== 仪表盘式详情布局 ========== */
         .dashboard {
             display: grid;
-            grid-template-columns: 220px 1fr;
-            min-height: 320px;
+            grid-template-columns: 400px 1fr;
+            min-height: 500px;
         }
 
         /* 左侧面板 - 图片+状态 */
         .dash-sidebar {
             background: linear-gradient(180deg, var(--bg-secondary) 0%, var(--bg-primary) 100%);
-            padding: 1rem;
+            padding: 1.5rem;
             display: flex;
             flex-direction: column;
             align-items: center;
-            gap: 0.75rem;
+            gap: 1rem;
             border-right: 1px solid var(--border-color);
         }
 
         .dash-image {
             width: 100%;
-            aspect-ratio: 4/3;
-            border-radius: 10px;
+            max-height: 500px;
+            border-radius: 12px;
             overflow: hidden;
             background: var(--bg-primary);
             box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+
+        .dash-image:hover {
+            transform: scale(1.02);
         }
 
         .dash-image img {
             width: 100%;
-            height: 100%;
+            height: auto;
+            max-height: 500px;
             object-fit: contain;
+            display: block;
         }
 
         /* 状态徽章 */
@@ -1097,6 +1105,147 @@
             color: var(--text-muted);
             font-size: 0.8rem;
         }
+
+        /* 分页 */
+        .pagination {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            margin-top: 2rem;
+            padding: 1rem;
+        }
+
+        .pagination-btn {
+            padding: 0.5rem 1rem;
+            border: 1px solid var(--border-color);
+            background: var(--bg-card);
+            color: var(--text-primary);
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 0.85rem;
+            transition: all 0.2s;
+        }
+
+        .pagination-btn:hover:not(:disabled) {
+            background: var(--bg-card-hover);
+            border-color: var(--accent-cyan);
+        }
+
+        .pagination-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .pagination-btn.active {
+            background: var(--accent-cyan);
+            border-color: var(--accent-cyan);
+            color: white;
+        }
+
+        .pagination-info {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            margin: 0 1rem;
+        }
+
+        /* 异常类型筛选 */
+        .issue-filter {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin-top: 0.5rem;
+        }
+
+        .issue-filter-btn {
+            padding: 0.35rem 0.75rem;
+            border: 1px solid var(--border-color);
+            background: var(--bg-secondary);
+            color: var(--text-secondary);
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.75rem;
+            transition: all 0.2s;
+        }
+
+        .issue-filter-btn:hover {
+            border-color: var(--accent-cyan);
+            color: var(--text-primary);
+        }
+
+        .issue-filter-btn.active {
+            background: var(--accent-cyan);
+            border-color: var(--accent-cyan);
+            color: white;
+        }
+
+        /* 全屏图片查看 */
+        .full-image-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.95);
+            backdrop-filter: blur(10px);
+            z-index: 2000;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem;
+        }
+
+        .full-image-overlay.active {
+            display: flex;
+        }
+
+        .full-image-container {
+            max-width: 95vw;
+            max-height: 95vh;
+            position: relative;
+        }
+
+        .full-image-container img {
+            max-width: 100%;
+            max-height: 95vh;
+            object-fit: contain;
+            border-radius: 8px;
+            box-shadow: 0 10px 50px rgba(0, 0, 0, 0.5);
+        }
+
+        .full-image-close {
+            position: absolute;
+            top: -40px;
+            right: 0;
+            width: 36px;
+            height: 36px;
+            border: none;
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 1.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
+        }
+
+        .full-image-close:hover {
+            background: var(--accent-rose);
+            transform: scale(1.1);
+        }
+
+        .full-image-title {
+            position: absolute;
+            bottom: -40px;
+            left: 0;
+            color: white;
+            font-size: 0.9rem;
+            padding: 0.5rem 1rem;
+            background: rgba(0, 0, 0, 0.5);
+            border-radius: 6px;
+        }
     </style>
 </head>
 <body>
@@ -1129,6 +1278,15 @@
         <footer class="footer">
             OriginX v1.0.0 | 图像质量诊断系统
         </footer>
+    </div>
+
+    <!-- 全屏图片查看 -->
+    <div class="full-image-overlay" id="fullImageOverlay" onclick="closeFullImage(event)">
+        <div class="full-image-container">
+            <button class="full-image-close" onclick="closeFullImage()">×</button>
+            <img id="fullImage" src="" alt="">
+            <div class="full-image-title" id="fullImageTitle"></div>
+        </div>
     </div>
 
     <!-- 详情弹窗 -->
@@ -1185,7 +1343,8 @@
             'stripe_normal': '无条纹',
             'horizontal_stripe': '水平条纹',
             'vertical_stripe': '垂直条纹',
-            'color_stripe': '彩色条纹'
+            'color_stripe': '彩色条纹',
+            'solid_color': '纯色画面'
         };
 
         const DETECTOR_NAMES = {
@@ -1214,6 +1373,9 @@
         let reportData = null;
         let currentFilter = 'all';
         let currentView = 'grid';
+        let currentIssueFilter = null;
+        let currentPage = 1;
+        const itemsPerPage = 12;
 
         function getIssueTypeName(type) {
             return ISSUE_TYPE_MAP[type] || type;
@@ -1313,16 +1475,25 @@
                 </section>
 
                 <div class="filter-bar fade-in" style="animation-delay: 0.1s">
-                    <div class="filter-tabs">
-                        <button class="filter-tab active" data-filter="all">
-                            全部 <span class="count">${summary.total}</span>
-                        </button>
-                        <button class="filter-tab" data-filter="normal">
-                            ✅ 正常 <span class="count">${summary.normal}</span>
-                        </button>
-                        <button class="filter-tab" data-filter="abnormal">
-                            ⚠️ 异常 <span class="count">${summary.abnormal}</span>
-                        </button>
+                    <div>
+                        <div class="filter-tabs">
+                            <button class="filter-tab active" data-filter="all">
+                                全部 <span class="count">${summary.total}</span>
+                            </button>
+                            <button class="filter-tab" data-filter="normal">
+                                ✅ 正常 <span class="count">${summary.normal}</span>
+                            </button>
+                            <button class="filter-tab" data-filter="abnormal">
+                                ⚠️ 异常 <span class="count">${summary.abnormal}</span>
+                            </button>
+                        </div>
+                        <div class="issue-filter" id="issueFilter">
+                            ${Object.entries(summary.issue_distribution).map(([issue, count]) => `
+                                <button class="issue-filter-btn" data-issue="${issue}">
+                                    ${getIssueTypeName(issue)} <span style="opacity: 0.7;">(${count})</span>
+                                </button>
+                            `).join('')}
+                        </div>
                     </div>
                     <select class="sort-select" id="sortSelect">
                         <option value="default">默认排序</option>
@@ -1339,6 +1510,8 @@
                 <div class="image-list" id="imageList">
                     ${renderListItems(results)}
                 </div>
+
+                ${renderPagination(results)}
             `;
 
             document.getElementById('content').innerHTML = html;
@@ -1347,12 +1520,15 @@
 
         // 渲染网格项
         function renderGridItems(results) {
-            const filtered = filterResults(results);
+            const { items: filtered } = getPaginatedResults(results);
             if (filtered.length === 0) {
                 return '<div class="empty-state" style="grid-column: 1/-1;"><div class="empty-icon">📭</div><p>没有符合条件的图片</p></div>';
             }
 
-            return filtered.map((result, index) => {
+            // 需要找到原始索引
+            const allFiltered = filterResults(results);
+            return filtered.map((result) => {
+                const index = allFiltered.indexOf(result);
                 const filename = getFilename(result.image_path);
                 const imagePath = getImagePath(result.image_path);
                 const isAbnormal = result.is_abnormal;
@@ -1408,12 +1584,15 @@
 
         // 渲染列表项
         function renderListItems(results) {
-            const filtered = filterResults(results);
+            const { items: filtered } = getPaginatedResults(results);
             if (filtered.length === 0) {
                 return '<div class="empty-state"><div class="empty-icon">📭</div><p>没有符合条件的图片</p></div>';
             }
 
-            return filtered.map((result, index) => {
+            // 需要找到原始索引
+            const allFiltered = filterResults(results);
+            return filtered.map((result) => {
+                const index = allFiltered.indexOf(result);
                 const filename = getFilename(result.image_path);
                 const imagePath = getImagePath(result.image_path);
                 const isAbnormal = result.is_abnormal;
@@ -1453,6 +1632,11 @@
                 filtered = filtered.filter(r => r.is_abnormal);
             }
 
+            // 异常类型筛选
+            if (currentIssueFilter) {
+                filtered = filtered.filter(r => r.primary_issue === currentIssueFilter);
+            }
+
             const sortValue = document.getElementById('sortSelect')?.value || 'default';
             if (sortValue === 'abnormal-first') {
                 filtered.sort((a, b) => b.is_abnormal - a.is_abnormal);
@@ -1465,6 +1649,80 @@
             return filtered;
         }
 
+        // 获取分页后的结果
+        function getPaginatedResults(results) {
+            const filtered = filterResults(results);
+            const totalPages = Math.ceil(filtered.length / itemsPerPage);
+            const start = (currentPage - 1) * itemsPerPage;
+            const end = start + itemsPerPage;
+            return {
+                items: filtered.slice(start, end),
+                total: filtered.length,
+                totalPages: totalPages,
+                currentPage: currentPage
+            };
+        }
+
+        // 渲染分页
+        function renderPagination(results) {
+            const { total, totalPages, currentPage } = getPaginatedResults(results);
+            
+            if (totalPages <= 1) {
+                return `<div class="pagination"><div class="pagination-info">共 ${total} 项</div></div>`;
+            }
+
+            let paginationHTML = '<div class="pagination">';
+            
+            // 上一页
+            paginationHTML += `<button class="pagination-btn" onclick="changePage(${currentPage - 1})" ${currentPage === 1 ? 'disabled' : ''}>上一页</button>`;
+            
+            // 页码
+            const maxVisible = 5;
+            let startPage = Math.max(1, currentPage - Math.floor(maxVisible / 2));
+            let endPage = Math.min(totalPages, startPage + maxVisible - 1);
+            
+            if (endPage - startPage < maxVisible - 1) {
+                startPage = Math.max(1, endPage - maxVisible + 1);
+            }
+            
+            if (startPage > 1) {
+                paginationHTML += `<button class="pagination-btn" onclick="changePage(1)">1</button>`;
+                if (startPage > 2) {
+                    paginationHTML += `<span class="pagination-info">...</span>`;
+                }
+            }
+            
+            for (let i = startPage; i <= endPage; i++) {
+                paginationHTML += `<button class="pagination-btn ${i === currentPage ? 'active' : ''}" onclick="changePage(${i})">${i}</button>`;
+            }
+            
+            if (endPage < totalPages) {
+                if (endPage < totalPages - 1) {
+                    paginationHTML += `<span class="pagination-info">...</span>`;
+                }
+                paginationHTML += `<button class="pagination-btn" onclick="changePage(${totalPages})">${totalPages}</button>`;
+            }
+            
+            // 下一页
+            paginationHTML += `<button class="pagination-btn" onclick="changePage(${currentPage + 1})" ${currentPage === totalPages ? 'disabled' : ''}>下一页</button>`;
+            
+            // 信息
+            paginationHTML += `<div class="pagination-info">第 ${currentPage} / ${totalPages} 页，共 ${total} 项</div>`;
+            paginationHTML += '</div>';
+            
+            return paginationHTML;
+        }
+
+        // 切换页码
+        function changePage(page) {
+            const { totalPages } = getPaginatedResults(reportData.results);
+            if (page < 1 || page > totalPages) return;
+            currentPage = page;
+            updateResults();
+            // 滚动到顶部
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
         // 绑定事件
         function bindEvents() {
             // 筛选标签
@@ -1473,12 +1731,33 @@
                     document.querySelectorAll('.filter-tab').forEach(t => t.classList.remove('active'));
                     tab.classList.add('active');
                     currentFilter = tab.dataset.filter;
+                    currentPage = 1; // 重置到第一页
                     updateResults();
                 });
             });
 
             // 排序
-            document.getElementById('sortSelect')?.addEventListener('change', updateResults);
+            document.getElementById('sortSelect')?.addEventListener('change', () => {
+                currentPage = 1; // 重置到第一页
+                updateResults();
+            });
+
+            // 异常类型筛选
+            document.querySelectorAll('.issue-filter-btn').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const issue = btn.dataset.issue;
+                    if (currentIssueFilter === issue) {
+                        currentIssueFilter = null;
+                        btn.classList.remove('active');
+                    } else {
+                        document.querySelectorAll('.issue-filter-btn').forEach(b => b.classList.remove('active'));
+                        currentIssueFilter = issue;
+                        btn.classList.add('active');
+                    }
+                    currentPage = 1; // 重置到第一页
+                    updateResults();
+                });
+            });
 
             // 视图切换
             document.querySelectorAll('.view-btn').forEach(btn => {
@@ -1497,12 +1776,16 @@
         function updateResults() {
             document.getElementById('imageGrid').innerHTML = renderGridItems(reportData.results);
             document.getElementById('imageList').innerHTML = renderListItems(reportData.results);
+            const paginationEl = document.getElementById('pagination');
+            if (paginationEl) {
+                paginationEl.outerHTML = renderPagination(reportData.results);
+            }
         }
 
         // 显示详情
         function showDetail(index) {
-            const filtered = filterResults(reportData.results);
-            const result = filtered[index];
+            const allFiltered = filterResults(reportData.results);
+            const result = allFiltered[index];
             if (!result) return;
 
             const filename = getFilename(result.image_path);
@@ -1579,7 +1862,7 @@
             document.getElementById('modal-body').innerHTML = `
                 <div class="dashboard">
                     <div class="dash-sidebar">
-                        <div class="dash-image">
+                        <div class="dash-image" onclick="showFullImage('${imagePath}', '${filename}')">
                             <img src="${imagePath}" alt="${filename}">
                         </div>
                         <div class="dash-badge ${isAbnormal ? 'abnormal' : 'normal'}">
@@ -1677,9 +1960,32 @@
         // ESC 关闭
         document.addEventListener('keydown', (e) => {
             if (e.key === 'Escape') {
-                closeModal();
+                if (document.getElementById('fullImageOverlay').classList.contains('active')) {
+                    closeFullImage();
+                } else {
+                    closeModal();
+                }
             }
         });
+
+        // 显示全屏图片
+        function showFullImage(imagePath, filename) {
+            const overlay = document.getElementById('fullImageOverlay');
+            const img = document.getElementById('fullImage');
+            const title = document.getElementById('fullImageTitle');
+            
+            img.src = imagePath;
+            title.textContent = filename;
+            overlay.classList.add('active');
+        }
+
+        // 关闭全屏图片
+        function closeFullImage(event) {
+            if (event && event.target !== event.currentTarget) {
+                return; // 点击图片本身不关闭
+            }
+            document.getElementById('fullImageOverlay').classList.remove('active');
+        }
 
         // 加载数据
         document.addEventListener('DOMContentLoaded', loadReport);

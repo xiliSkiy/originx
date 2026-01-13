@@ -70,7 +70,9 @@ PRESET_PROFILES: Dict[str, ProfileConfig] = {
         name="normal",
         display_name="标准模式",
         description="适用于园区、企业等一般监控场景",
-        thresholds=DetectionThresholds(),  # 使用默认值
+        thresholds=DetectionThresholds(
+            noise_threshold=30.0,  # 提高阈值，减少对纹理丰富图像的误报
+        ),
     ),
     "loose": ProfileConfig(
         name="loose",
