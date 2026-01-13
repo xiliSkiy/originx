@@ -139,3 +139,16 @@ config.yaml
 # Test data
 test_data/
 
+# Node.js
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+package-lock.json
+yarn.lock
+
+# Frontend build
+web/node_modules/
+web/dist/
+web/.vite/
+web/.DS_Store
